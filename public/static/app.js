@@ -640,7 +640,30 @@ function displayAIResponse(response) {
                 displayText += '📋 ' + currentAIData.analyse + '\n\n';
             }
             
-            if (currentAIData.prestations && currentAIData.prestations.length > 0) {
+            // Gestion du nouveau format avec lots
+            if (currentAIData.lots && currentAIData.lots.length > 0) {
+                displayText += '✅ PRESTATIONS PAR LOT :\n\n';
+                
+                currentAIData.lots.forEach((lot, lotIndex) => {
+                    displayText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    displayText += `📦 LOT ${lotIndex + 1} : ${lot.nom_lot}\n`;
+                    displayText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+                    
+                    let totalLot = 0;
+                    lot.prestations.forEach((p, index) => {
+                        const totalPresta = p.quantite * p.prix_unitaire;
+                        totalLot += totalPresta;
+                        displayText += `${index + 1}. ${p.designation}\n`;
+                        displayText += `   Quantité: ${p.quantite} ${p.unite || ''}\n`;
+                        displayText += `   Prix unitaire: ${p.prix_unitaire}€\n`;
+                        displayText += `   Total: ${totalPresta.toFixed(2)}€\n\n`;
+                    });
+                    
+                    displayText += `   ➡️ SOUS-TOTAL LOT : ${totalLot.toFixed(2)}€ HT\n\n`;
+                });
+            } 
+            // Ancien format sans lots (rétrocompatibilité)
+            else if (currentAIData.prestations && currentAIData.prestations.length > 0) {
                 displayText += '✅ PRESTATIONS PROPOSÉES :\n\n';
                 currentAIData.prestations.forEach((p, index) => {
                     displayText += `${index + 1}. ${p.designation}\n`;
@@ -672,6 +695,53 @@ function displayAIResponse(response) {
 }
 
 function applyAIResponse() {
+    // Gérer le nouveau format avec lots
+    if (currentAIData && currentAIData.lots && currentAIData.lots.length > 0) {
+        // Réinitialiser les prestations
+        const tbody = document.getElementById('prestationsBody');
+        tbody.innerHTML = '';
+        prestationCount = 0;
+        
+        // Parcourir chaque lot
+        currentAIData.lots.forEach((lot, lotIndex) => {
+            // Ajouter une ligne de séparateur pour le lot
+            const separatorRow = document.createElement('tr');
+            separatorRow.className = 'bg-blue-100 font-bold';
+            separatorRow.innerHTML = `
+                <td colspan="5" class="border-2 border-blue-300 p-3 text-center text-blue-800">
+                    <i class="fas fa-folder-open mr-2"></i>
+                    ${lot.nom_lot}
+                </td>
+            `;
+            tbody.appendChild(separatorRow);
+            
+            // Ajouter chaque prestation du lot
+            lot.prestations.forEach((prestation) => {
+                const row = document.createElement('tr');
+                row.id = 'prestationRow' + prestationCount;
+                row.innerHTML = `
+                    <td class="border p-2"><input type="text" class="w-full p-1 border rounded prestation-designation" value="${prestation.designation}"></td>
+                    <td class="border p-2"><input type="number" class="w-full p-1 border rounded text-center prestation-qte" value="${prestation.quantite}" min="0" step="0.01"></td>
+                    <td class="border p-2"><input type="number" class="w-full p-1 border rounded text-right prestation-pu" value="${prestation.prix_unitaire}" min="0" step="0.01"></td>
+                    <td class="border p-2 text-right prestation-total">0.00 €</td>
+                    <td class="border p-2 text-center no-print"><button class="text-red-600 hover:text-red-800 remove-prestation"><i class="fas fa-trash"></i></button></td>
+                `;
+                tbody.appendChild(row);
+                prestationCount++;
+            });
+        });
+        
+        // Recalculer les totaux
+        calculateTotals();
+        
+        // Cacher la réponse IA
+        document.getElementById('aiResponse').classList.add('hidden');
+        
+        alert('✅ Devis rempli avec les suggestions de l\'IA par lots !\nVous pouvez maintenant modifier si nécessaire.');
+        return;
+    }
+    
+    // Ancien format sans lots (rétrocompatibilité)
     if (!currentAIData || !currentAIData.prestations) {
         alert('⚠️ Impossible d\'appliquer la réponse IA');
         return;

@@ -35,24 +35,36 @@ app.post('/api/ai-assistant', async (c) => {
 Ton rôle :
 1. Analyser la demande de l'artisan
 2. Identifier TOUS les postes nécessaires (main d'œuvre + fournitures + accessoires)
-3. Proposer des quantités réalistes avec marges (ex: +10% pour chutes)
-4. Calculer des prix basés sur les VRAIS taux horaires et rendements du marché
-5. Séparer clairement main d'œuvre et fournitures
+3. **DÉTECTER et SÉPARER automatiquement les différents LOTS/TRAVAUX** (parquet, plomberie, électricité, peinture, etc.)
+4. Proposer des quantités réalistes avec marges (ex: +10% pour chutes)
+5. Calculer des prix basés sur les VRAIS taux horaires et rendements du marché
+6. Séparer clairement main d'œuvre et fournitures
 
 Format de réponse OBLIGATOIRE en JSON :
 {
   "analyse": "Explication courte de ce qui est nécessaire",
-  "prestations": [
+  "lots": [
     {
-      "designation": "Description claire",
-      "quantite": 12.5,
-      "unite": "m²" ou "h" ou "unité" ou "ml" ou "forfait",
-      "prix_unitaire": 45.00,
-      "type": "main_oeuvre" ou "fourniture"
+      "nom_lot": "PARQUET" ou "PLOMBERIE" ou "ÉLECTRICITÉ" ou "PEINTURE" ou "CARRELAGE" etc.,
+      "prestations": [
+        {
+          "designation": "Description claire",
+          "quantite": 12.5,
+          "unite": "m²" ou "h" ou "unité" ou "ml" ou "forfait",
+          "prix_unitaire": 45.00,
+          "type": "main_oeuvre" ou "fourniture"
+        }
+      ]
     }
   ],
   "conseils": "Conseils professionnels pour l'artisan"
 }
+
+⚠️ IMPORTANT : Si la demande contient PLUSIEURS travaux différents (ex: parquet + douche), tu DOIS créer plusieurs lots distincts !
+
+Exemple : "parquet 25m² et installation paroi de douche"
+→ LOT 1 : "PARQUET" avec toutes les prestations parquet
+→ LOT 2 : "PLOMBERIE - DOUCHE" avec toutes les prestations douche
 
 ═══════════════════════════════════════════════════════════════
 📊 TAUX HORAIRES DE VENTE HT PAR MÉTIER (France 2024-2025)
@@ -127,28 +139,73 @@ Plomberie/Électricité : prix catalogue fournisseurs pro + marge 30-40%
 6. Prix fournitures = prix d'achat × 1.30 à 1.40 (marge artisan 30-40%)
 
 ═══════════════════════════════════════════════════════════════
-✅ EXEMPLE CONCRET : "Parquet stratifié 12m²"
+✅ EXEMPLE CONCRET : "Parquet 25m² + installation paroi douche"
 ═══════════════════════════════════════════════════════════════
-Prestations :
-1. Fourniture parquet stratifié milieu gamme
-   → 13.2 m² (12 + 10% chutes) × 20€ = 264€
-
-2. Fourniture sous-couche acoustique
-   → 13 m² × 2€ = 26€
-
-3. Fourniture plinthes MDF
-   → 15 ml × 3.5€ = 52.50€
-
-4. Fourniture colle et accessoires
-   → Forfait = 40€
-
-5. Main d'œuvre pose parquet stratifié
-   → 12 m² × 30€/m² (soit ~0.6h/m² × 50€/h) = 360€
-
-6. Main d'œuvre pose plinthes
-   → 15 ml × 8€/ml (soit ~0.15h/ml × 50€/h) = 120€
-
-TOTAL HT : 862.50€
+{
+  "analyse": "Deux travaux distincts : pose de parquet stratifié et installation plomberie sanitaire",
+  "lots": [
+    {
+      "nom_lot": "PARQUET - REVÊTEMENT SOL",
+      "prestations": [
+        {
+          "designation": "Fourniture parquet stratifié milieu gamme",
+          "quantite": 27.5,
+          "unite": "m²",
+          "prix_unitaire": 20,
+          "type": "fourniture"
+        },
+        {
+          "designation": "Fourniture sous-couche acoustique",
+          "quantite": 25,
+          "unite": "m²",
+          "prix_unitaire": 2.6,
+          "type": "fourniture"
+        },
+        {
+          "designation": "Fourniture plinthes MDF",
+          "quantite": 30,
+          "unite": "ml",
+          "prix_unitaire": 3.25,
+          "type": "fourniture"
+        },
+        {
+          "designation": "Fourniture colle et accessoires",
+          "quantite": 1,
+          "unite": "forfait",
+          "prix_unitaire": 40,
+          "type": "fourniture"
+        },
+        {
+          "designation": "Main d'œuvre pose parquet stratifié",
+          "quantite": 25,
+          "unite": "m²",
+          "prix_unitaire": 30,
+          "type": "main_oeuvre"
+        }
+      ]
+    },
+    {
+      "nom_lot": "PLOMBERIE - SANITAIRE DOUCHE",
+      "prestations": [
+        {
+          "designation": "Fourniture paroi de douche verre 8mm",
+          "quantite": 1,
+          "unite": "unité",
+          "prix_unitaire": 300,
+          "type": "fourniture"
+        },
+        {
+          "designation": "Main d'œuvre installation paroi douche",
+          "quantite": 4,
+          "unite": "h",
+          "prix_unitaire": 55,
+          "type": "main_oeuvre"
+        }
+      ]
+    }
+  ],
+  "conseils": "Vérifier l'état du support avant pose parquet. Pour la douche, prévoir étanchéité conforme DTU 60.11"
+}
 
 Ne JAMAIS proposer de prix main d'œuvre trop bas qui ne couvrent pas les charges !`
           },
