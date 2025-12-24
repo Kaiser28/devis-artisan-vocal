@@ -22,9 +22,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialisation de la reconnaissance vocale
 function initSpeechRecognition() {
+    const statusEl = document.getElementById('status');
+    const startBtn = document.getElementById('startBtn');
+    
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        document.getElementById('status').innerHTML = '<span class="text-red-600">❌ La reconnaissance vocale n\'est pas supportée par votre navigateur. Utilisez Chrome ou Edge.</span>';
-        document.getElementById('startBtn').disabled = true;
+        statusEl.innerHTML = `
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                <p class="text-red-800 font-bold mb-2">❌ Reconnaissance vocale non disponible</p>
+                <p class="text-red-700 text-sm">Votre navigateur ne supporte pas la reconnaissance vocale.</p>
+                <p class="text-red-700 text-sm mt-2"><strong>Solutions :</strong></p>
+                <ul class="list-disc list-inside text-red-700 text-sm ml-2">
+                    <li>Utilisez <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong></li>
+                    <li>Vérifiez que vous êtes en <strong>HTTPS</strong> (URL doit commencer par https://)</li>
+                    <li>Sinon, utilisez la saisie manuelle dans le champ texte</li>
+                </ul>
+            </div>
+        `;
+        startBtn.disabled = true;
         return;
     }
     
@@ -36,15 +50,87 @@ function initSpeechRecognition() {
     
     recognition.onstart = function() {
         isRecording = true;
-        document.getElementById('status').innerHTML = '<span class="text-green-600 recording">🎤 Enregistrement en cours...</span>';
-        document.getElementById('startBtn').classList.add('hidden');
+        statusEl.innerHTML = `
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded">
+                <p class="text-green-800 font-bold">🎤 Enregistrement en cours...</p>
+                <p class="text-green-700 text-sm">Parlez maintenant, je vous écoute !</p>
+            </div>
+        `;
+        startBtn.classList.add('hidden');
         document.getElementById('stopBtn').classList.remove('hidden');
     };
     
     recognition.onend = function() {
         isRecording = false;
-        document.getElementById('status').innerHTML = '<span class="text-gray-600">⏸️ Enregistrement arrêté</span>';
-        document.getElementById('startBtn').classList.remove('hidden');
+        statusEl.innerHTML = `
+            <div class="bg-gray-50 border-l-4 border-gray-400 p-3 rounded">
+                <p class="text-gray-800">⏸️ Enregistrement arrêté</p>
+                <p class="text-gray-600 text-sm">Cliquez sur "Commencer la dictée" pour reprendre</p>
+            </div>
+        `;
+        startBtn.classList.remove('hidden');
+        document.getElementById('stopBtn').classList.add('hidden');
+    };
+    
+    recognition.onerror = function(event) {
+        isRecording = false;
+        let errorMessage = '';
+        let solutions = [];
+        
+        switch(event.error) {
+            case 'no-speech':
+                errorMessage = 'Aucune parole détectée';
+                solutions = [
+                    'Vérifiez que votre microphone fonctionne',
+                    'Parlez plus fort et plus près du micro',
+                    'Testez votre micro dans les paramètres système'
+                ];
+                break;
+            case 'audio-capture':
+                errorMessage = 'Microphone non accessible';
+                solutions = [
+                    'Vérifiez que votre microphone est branché',
+                    'Autorisez l\'accès au micro dans votre navigateur (icône 🔒 dans la barre d\'adresse)',
+                    'Vérifiez les paramètres de confidentialité de votre système'
+                ];
+                break;
+            case 'not-allowed':
+                errorMessage = 'Permission microphone refusée';
+                solutions = [
+                    'Cliquez sur l\'icône 🔒 dans la barre d\'adresse',
+                    'Autorisez l\'accès au microphone pour ce site',
+                    'Rechargez la page après avoir donné la permission'
+                ];
+                break;
+            case 'network':
+                errorMessage = 'Erreur réseau';
+                solutions = [
+                    'Vérifiez votre connexion internet',
+                    'La reconnaissance vocale nécessite une connexion active'
+                ];
+                break;
+            default:
+                errorMessage = 'Erreur: ' + event.error;
+                solutions = [
+                    'Essayez de recharger la page',
+                    'Utilisez la saisie manuelle en attendant'
+                ];
+        }
+        
+        statusEl.innerHTML = `
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                <p class="text-red-800 font-bold mb-2">❌ ${errorMessage}</p>
+                <p class="text-red-700 text-sm mt-2"><strong>Solutions :</strong></p>
+                <ul class="list-disc list-inside text-red-700 text-sm ml-2">
+                    ${solutions.map(s => `<li>${s}</li>`).join('')}
+                </ul>
+                <p class="text-red-600 text-sm mt-3 font-semibold">
+                    💡 Vous pouvez aussi taper directement dans le champ texte ci-dessous
+                </p>
+            </div>
+        `;
+        
+        startBtn.classList.remove('hidden');
         document.getElementById('stopBtn').classList.add('hidden');
     };
     
