@@ -419,14 +419,6 @@ app.get('/', (c) => {
                     </button>
                 </div>
             </div>
-                        Paramètres
-                    </button>
-                    <button id="newDevisBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
-                        <i class="fas fa-plus mr-2"></i>
-                        Nouveau devis
-                    </button>
-                </div>
-            </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
                 <!-- Partie gauche : Saisie vocale -->
