@@ -97,15 +97,15 @@ export class InteractiveTutorial {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.7);
-                backdrop-filter: blur(2px);
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(1px);
             }
             
             .tutorial-spotlight {
                 position: absolute;
                 border: 3px solid #3b82f6;
                 border-radius: 8px;
-                box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7),
+                box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4),
                             0 0 20px rgba(59, 130, 246, 0.5);
                 transition: all 0.3s ease;
                 pointer-events: none;
@@ -117,8 +117,8 @@ export class InteractiveTutorial {
                 background: white;
                 border-radius: 12px;
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-                max-width: 450px;
-                min-width: 350px;
+                max-width: min(450px, 90vw);
+                min-width: min(350px, 85vw);
                 padding: 0;
                 z-index: 100001;
                 animation: tooltipAppear 0.3s ease;
@@ -363,15 +363,29 @@ export class InteractiveTutorial {
         this.overlay.querySelector('.tutorial-next').textContent = 
             (index === this.steps.length - 1) ? 'Terminer ✓' : 'Suivant →';
         
-        // Highlight élément
+        // Scroll vers l'élément ciblé
         if (step.target) {
-            this.highlightElement(step.target);
+            const element = document.querySelector(step.target);
+            if (element) {
+                element.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center',
+                    inline: 'center'
+                });
+                
+                // Attendre le scroll avant de positionner
+                setTimeout(() => {
+                    this.highlightElement(step.target);
+                    this.positionTooltip(step);
+                }, 300);
+            } else {
+                this.hideHighlight();
+                this.positionTooltip(step);
+            }
         } else {
             this.hideHighlight();
+            this.positionTooltip(step);
         }
-        
-        // Position tooltip
-        this.positionTooltip(step);
         
         // Validation
         if (step.validate) {
@@ -418,30 +432,57 @@ export class InteractiveTutorial {
     positionTooltip(step) {
         const tooltip = this.overlay.querySelector('.tutorial-tooltip');
         
+        // Reset transform pour mesures correctes
+        tooltip.style.transform = 'none';
+        
         if (step.target) {
             const element = document.querySelector(step.target);
             if (element) {
                 const rect = element.getBoundingClientRect();
                 const position = step.position || 'bottom';
                 
+                const tooltipWidth = tooltip.offsetWidth;
+                const tooltipHeight = tooltip.offsetHeight;
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                
+                let top, left;
+                
                 switch(position) {
                     case 'top':
-                        tooltip.style.top = `${rect.top - tooltip.offsetHeight - 20}px`;
-                        tooltip.style.left = `${rect.left + rect.width / 2 - tooltip.offsetWidth / 2}px`;
+                        top = rect.top - tooltipHeight - 20;
+                        left = rect.left + rect.width / 2 - tooltipWidth / 2;
                         break;
                     case 'bottom':
-                        tooltip.style.top = `${rect.bottom + 20}px`;
-                        tooltip.style.left = `${rect.left + rect.width / 2 - tooltip.offsetWidth / 2}px`;
+                        top = rect.bottom + 20;
+                        left = rect.left + rect.width / 2 - tooltipWidth / 2;
                         break;
                     case 'left':
-                        tooltip.style.top = `${rect.top + rect.height / 2 - tooltip.offsetHeight / 2}px`;
-                        tooltip.style.left = `${rect.left - tooltip.offsetWidth - 20}px`;
+                        top = rect.top + rect.height / 2 - tooltipHeight / 2;
+                        left = rect.left - tooltipWidth - 20;
                         break;
                     case 'right':
-                        tooltip.style.top = `${rect.top + rect.height / 2 - tooltip.offsetHeight / 2}px`;
-                        tooltip.style.left = `${rect.right + 20}px`;
+                        top = rect.top + rect.height / 2 - tooltipHeight / 2;
+                        left = rect.right + 20;
                         break;
                 }
+                
+                // Contraintes viewport : éviter débordement horizontal
+                if (left < 20) {
+                    left = 20;
+                } else if (left + tooltipWidth > viewportWidth - 20) {
+                    left = viewportWidth - tooltipWidth - 20;
+                }
+                
+                // Contraintes viewport : éviter débordement vertical
+                if (top < 20) {
+                    top = 20;
+                } else if (top + tooltipHeight > viewportHeight - 20) {
+                    top = viewportHeight - tooltipHeight - 20;
+                }
+                
+                tooltip.style.top = `${top}px`;
+                tooltip.style.left = `${left}px`;
                 return;
             }
         }
