@@ -561,6 +561,10 @@ function newDevis() {
     // Cacher la réponse IA si visible
     document.getElementById('aiResponse').classList.add('hidden');
     
+    // Réinitialiser l'historique de conversation
+    conversationHistory = [];
+    currentAIData = null;
+    
     // Générer nouveau numéro de devis
     initDevisDate();
     
@@ -572,6 +576,7 @@ function newDevis() {
 
 // Appeler l'assistant IA
 let currentAIData = null;
+let conversationHistory = []; // Historique de la conversation
 
 async function callAIAssistant() {
     const text = document.getElementById('transcript').value.trim();
@@ -604,7 +609,8 @@ async function callAIAssistant() {
             },
             body: JSON.stringify({
                 prompt: text,
-                apiKey: apiKey
+                apiKey: apiKey,
+                conversationHistory: conversationHistory
             })
         });
         
@@ -613,6 +619,21 @@ async function callAIAssistant() {
         if (!response.ok) {
             throw new Error(data.error || 'Erreur inconnue');
         }
+        
+        // Ajouter le message utilisateur à l'historique
+        conversationHistory.push({
+            role: 'user',
+            content: text
+        });
+        
+        // Ajouter la réponse de l'IA à l'historique
+        conversationHistory.push({
+            role: 'assistant',
+            content: data.response
+        });
+        
+        // Effacer le champ de saisie pour la prochaine réponse
+        document.getElementById('transcript').value = '';
         
         // Afficher la réponse
         displayAIResponse(data.response);
@@ -636,12 +657,92 @@ function displayAIResponse(response) {
             // Formater l'affichage
             let displayText = '';
             
-            if (currentAIData.analyse) {
-                displayText += '📋 ' + currentAIData.analyse + '\n\n';
+            // MODE QUESTIONS : L'IA pose des questions
+            if (currentAIData.mode === 'questions') {
+                if (currentAIData.analyse_partielle) {
+                    displayText += '📋 ' + currentAIData.analyse_partielle + '\n\n';
+                }
+                
+                displayText += '❓ L\'IA a besoin de plus d\'informations :\n\n';
+                
+                currentAIData.questions.forEach((q, index) => {
+                    displayText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    displayText += `Question ${index + 1} ${q.importance === 'critique' ? '(❗ Important)' : '(📝 Optionnel)'} :\n`;
+                    displayText += `${q.question}\n\n`;
+                    
+                    if (q.options && q.options.length > 0) {
+                        q.options.forEach(opt => {
+                            displayText += `  • ${opt}\n`;
+                        });
+                        displayText += '\n';
+                    }
+                });
+                
+                displayText += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+                displayText += '💬 Répondez par voix ou texte dans le champ ci-dessus, puis recliquez sur "Assistant IA".\n';
+                displayText += '   Ou dites "génère le devis maintenant" pour passer à la génération.';
+                
+                document.getElementById('aiResponseText').textContent = displayText;
+                document.getElementById('aiResponse').classList.remove('hidden');
+                
+                // Cacher le bouton "Appliquer" en mode questions
+                document.getElementById('applyAiBtn').classList.add('hidden');
+                
+                return;
             }
             
-            // Gestion du nouveau format avec lots
+            // MODE DEVIS : L'IA génère le devis final
+            if (currentAIData.mode === 'devis') {
+                if (currentAIData.analyse) {
+                    displayText += '📋 ' + currentAIData.analyse + '\n\n';
+                }
+                
+                // Gestion du nouveau format avec lots
+                if (currentAIData.lots && currentAIData.lots.length > 0) {
+                    displayText += '✅ DEVIS FINAL PAR LOT :\n\n';
+                    
+                    currentAIData.lots.forEach((lot, lotIndex) => {
+                        displayText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                        displayText += `📦 LOT ${lotIndex + 1} : ${lot.nom_lot}\n`;
+                        displayText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+                        
+                        let totalLot = 0;
+                        lot.prestations.forEach((p, index) => {
+                            const totalPresta = p.quantite * p.prix_unitaire;
+                            totalLot += totalPresta;
+                            displayText += `${index + 1}. ${p.designation}\n`;
+                            displayText += `   Quantité: ${p.quantite} ${p.unite || ''}\n`;
+                            displayText += `   Prix unitaire: ${p.prix_unitaire}€\n`;
+                            displayText += `   Total: ${totalPresta.toFixed(2)}€\n\n`;
+                        });
+                        
+                        displayText += `   ➡️ SOUS-TOTAL LOT : ${totalLot.toFixed(2)}€ HT\n\n`;
+                    });
+                }
+                
+                if (currentAIData.hypotheses) {
+                    displayText += '\n⚠️ HYPOTHÈSES PRISES :\n' + currentAIData.hypotheses + '\n\n';
+                }
+                
+                if (currentAIData.conseils) {
+                    displayText += '💡 CONSEILS :\n' + currentAIData.conseils;
+                }
+                
+                document.getElementById('aiResponseText').textContent = displayText;
+                document.getElementById('aiResponse').classList.remove('hidden');
+                
+                // Afficher le bouton "Appliquer" en mode devis
+                document.getElementById('applyAiBtn').classList.remove('hidden');
+                
+                return;
+            }
+            
+            // ANCIEN FORMAT (rétrocompatibilité) - avec lots mais sans mode
             if (currentAIData.lots && currentAIData.lots.length > 0) {
+                if (currentAIData.analyse) {
+                    displayText += '📋 ' + currentAIData.analyse + '\n\n';
+                }
+                
                 displayText += '✅ PRESTATIONS PAR LOT :\n\n';
                 
                 currentAIData.lots.forEach((lot, lotIndex) => {
@@ -661,9 +762,24 @@ function displayAIResponse(response) {
                     
                     displayText += `   ➡️ SOUS-TOTAL LOT : ${totalLot.toFixed(2)}€ HT\n\n`;
                 });
-            } 
+                
+                if (currentAIData.conseils) {
+                    displayText += '💡 CONSEILS :\n' + currentAIData.conseils;
+                }
+                
+                document.getElementById('aiResponseText').textContent = displayText;
+                document.getElementById('aiResponse').classList.remove('hidden');
+                document.getElementById('applyAiBtn').classList.remove('hidden');
+                
+                return;
+            }
+            
             // Ancien format sans lots (rétrocompatibilité)
-            else if (currentAIData.prestations && currentAIData.prestations.length > 0) {
+            if (currentAIData.prestations && currentAIData.prestations.length > 0) {
+                if (currentAIData.analyse) {
+                    displayText += '📋 ' + currentAIData.analyse + '\n\n';
+                }
+                
                 displayText += '✅ PRESTATIONS PROPOSÉES :\n\n';
                 currentAIData.prestations.forEach((p, index) => {
                     displayText += `${index + 1}. ${p.designation}\n`;
@@ -671,30 +787,44 @@ function displayAIResponse(response) {
                     displayText += `   Prix unitaire: ${p.prix_unitaire}€\n`;
                     displayText += `   Total: ${(p.quantite * p.prix_unitaire).toFixed(2)}€\n\n`;
                 });
+                
+                if (currentAIData.conseils) {
+                    displayText += '💡 CONSEILS :\n' + currentAIData.conseils;
+                }
+                
+                document.getElementById('aiResponseText').textContent = displayText;
+                document.getElementById('aiResponse').classList.remove('hidden');
+                document.getElementById('applyAiBtn').classList.remove('hidden');
+                
+                return;
             }
-            
-            if (currentAIData.conseils) {
-                displayText += '💡 CONSEILS :\n' + currentAIData.conseils;
-            }
-            
-            document.getElementById('aiResponseText').textContent = displayText;
-            document.getElementById('aiResponse').classList.remove('hidden');
             
         } else {
             // Réponse non JSON
             currentAIData = null;
             document.getElementById('aiResponseText').textContent = response;
             document.getElementById('aiResponse').classList.remove('hidden');
+            document.getElementById('applyAiBtn').classList.add('hidden');
         }
     } catch (error) {
         console.error('Erreur parsing:', error);
         currentAIData = null;
         document.getElementById('aiResponseText').textContent = response;
         document.getElementById('aiResponse').classList.remove('hidden');
+        document.getElementById('applyAiBtn').classList.add('hidden');
     }
 }
 
 function applyAIResponse() {
+    // Vérifier que nous sommes en mode devis
+    if (!currentAIData || currentAIData.mode === 'questions') {
+        alert('⚠️ L\'IA a encore des questions. Répondez d\'abord aux questions posées.');
+        return;
+    }
+    
+    // Réinitialiser l'historique de conversation après application
+    conversationHistory = [];
+    
     // Gérer le nouveau format avec lots
     if (currentAIData && currentAIData.lots && currentAIData.lots.length > 0) {
         // Réinitialiser les prestations
