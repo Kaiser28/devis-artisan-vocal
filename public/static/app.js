@@ -678,6 +678,20 @@ async function callAIAssistant() {
     }
 }
 
+// Répondre à une question de l'IA en cliquant sur un bouton
+async function answerAIQuestion(answer) {
+    if (!answer || answer.trim() === '') {
+        alert('⚠️ Veuillez entrer une réponse');
+        return;
+    }
+    
+    // Mettre la réponse dans le champ transcript
+    document.getElementById('transcript').value = answer;
+    
+    // Appeler automatiquement l'assistant IA
+    await callAIAssistant();
+}
+
 function displayAIResponse(response) {
     try {
         // Essayer de parser le JSON
@@ -690,30 +704,80 @@ function displayAIResponse(response) {
             
             // MODE QUESTIONS : L'IA pose des questions
             if (currentAIData.mode === 'questions') {
+                // Créer une interface HTML avec des boutons
+                let htmlContent = '<div class="space-y-4">';
+                
                 if (currentAIData.analyse_partielle) {
-                    displayText += '📋 ' + currentAIData.analyse_partielle + '\n\n';
+                    htmlContent += `<div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                        <p class="text-blue-800"><strong>📋 Analyse :</strong> ${currentAIData.analyse_partielle}</p>
+                    </div>`;
                 }
                 
-                displayText += '❓ L\'IA a besoin de plus d\'informations :\n\n';
+                htmlContent += '<div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">';
+                htmlContent += '<p class="text-yellow-800 font-bold mb-2">❓ L\'IA a besoin de plus d\'informations :</p>';
+                htmlContent += '</div>';
                 
                 currentAIData.questions.forEach((q, index) => {
-                    displayText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-                    displayText += `Question ${index + 1} ${q.importance === 'critique' ? '(❗ Important)' : '(📝 Optionnel)'} :\n`;
-                    displayText += `${q.question}\n\n`;
+                    const importanceClass = q.importance === 'critique' ? 'border-red-500 bg-red-50' : 'border-blue-500 bg-blue-50';
+                    const importanceIcon = q.importance === 'critique' ? '❗' : '📝';
+                    
+                    htmlContent += `<div class="border-l-4 ${importanceClass} p-4 rounded">`;
+                    htmlContent += `<p class="font-bold text-gray-800 mb-3">${importanceIcon} Question ${index + 1} : ${q.question}</p>`;
                     
                     if (q.options && q.options.length > 0) {
-                        q.options.forEach(opt => {
-                            displayText += `  • ${opt}\n`;
+                        htmlContent += '<div class="space-y-2">';
+                        q.options.forEach((opt, optIndex) => {
+                            htmlContent += `
+                                <button onclick="answerAIQuestion('${opt.replace(/'/g, "\\'")}')" 
+                                        class="w-full text-left px-4 py-3 bg-white hover:bg-blue-100 border-2 border-blue-300 hover:border-blue-500 rounded-lg transition shadow-sm hover:shadow-md">
+                                    <span class="font-semibold text-blue-600">Option ${optIndex + 1}:</span> 
+                                    <span class="text-gray-800">${opt}</span>
+                                </button>
+                            `;
                         });
-                        displayText += '\n';
+                        htmlContent += '</div>';
+                    } else {
+                        // Pas d'options : champ de saisie libre
+                        htmlContent += `
+                            <div class="flex gap-2 mt-2">
+                                <input type="text" id="freeAnswer${index}" placeholder="Votre réponse..." 
+                                       class="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                <button onclick="answerAIQuestion(document.getElementById('freeAnswer${index}').value)" 
+                                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition">
+                                    Envoyer
+                                </button>
+                            </div>
+                        `;
                     }
+                    
+                    htmlContent += '</div>';
                 });
                 
-                displayText += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
-                displayText += '💬 Répondez par voix ou texte dans le champ ci-dessus, puis recliquez sur "Assistant IA".\n';
-                displayText += '   Ou dites "génère le devis maintenant" pour passer à la génération.';
+                // Bouton "Génère le devis maintenant"
+                htmlContent += `
+                    <div class="mt-6 p-4 bg-green-50 border-2 border-green-500 rounded-lg">
+                        <p class="text-green-800 mb-3"><strong>✅ Vous avez assez d'infos ?</strong></p>
+                        <button onclick="answerAIQuestion('génère le devis maintenant')" 
+                                class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition shadow-lg hover:shadow-xl">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Générer le devis maintenant
+                        </button>
+                    </div>
+                `;
                 
-                document.getElementById('aiResponseText').textContent = displayText;
+                // Bouton alternative vocale/texte
+                htmlContent += `
+                    <div class="mt-4 p-3 bg-gray-50 border border-gray-300 rounded-lg text-center">
+                        <p class="text-sm text-gray-600">
+                            <i class="fas fa-microphone mr-2"></i>
+                            Vous pouvez aussi répondre par <strong>voix</strong> ou <strong>texte</strong> ci-dessus, puis cliquer sur "🤖 Assistant IA"
+                        </p>
+                    </div>
+                `;
+                
+                htmlContent += '</div>';
+                
+                document.getElementById('aiResponseText').innerHTML = htmlContent;
                 document.getElementById('aiResponse').classList.remove('hidden');
                 
                 // Cacher le bouton "Appliquer" en mode questions
