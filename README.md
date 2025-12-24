@@ -4,7 +4,9 @@
 
 Application web complète pour les artisans du BTP permettant de créer des devis professionnels par **saisie vocale** avec l'aide d'une **IA intelligente** qui apprend de vos prix.
 
-**URL de l'application** : https://3000-ix7bae9zbw59gb71utmfj-cc2fbc16.sandbox.novita.ai
+**🔗 GitHub** : https://github.com/Kaiser28/devis-artisan-vocal  
+**🌐 URL de l'application** : https://3000-ix7bae9zbw59gb71utmfj-cc2fbc16.sandbox.novita.ai  
+**👤 Auteur** : Kaiser28
 
 ## ✨ Fonctionnalités principales
 
