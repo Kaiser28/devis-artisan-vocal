@@ -1,154 +1,188 @@
-# Devis Artisan - Saisie Vocale
+# 🛠️ Devis Artisan - Application de Saisie Vocale
 
-## 📋 Vue d'ensemble du projet
-Application web pour faciliter la création de devis pour les artisans grâce à la **saisie vocale intelligente**.
+## 📋 Vue d'ensemble
 
-**Objectif** : Gagner du temps pour les artisans en leur permettant de dicter leurs devis au lieu de les taper manuellement.
+Application web complète pour les artisans du BTP permettant de créer des devis professionnels par **saisie vocale** avec l'aide d'une **IA intelligente** qui apprend de vos prix.
 
-**Fonctionnalités principales** :
-- ✅ Reconnaissance vocale native du navigateur (Web Speech API)
-- ✅ Analyse automatique du texte dicté pour remplir le devis
-- ✅ Prévisualisation du devis en temps réel
-- ✅ Calcul automatique des totaux HT, TVA et TTC
-- ✅ Export PDF du devis généré
-- 🔄 **À venir** : Amélioration de l'analyse avec OpenAI pour une meilleure précision
+**URL de l'application** : https://3000-ix7bae9zbw59gb71utmfj-cc2fbc16.sandbox.novita.ai
 
-## 🌐 URLs
+## ✨ Fonctionnalités principales
 
-- **Application (sandbox)** : https://3000-ix7bae9zbw59gb71utmfj-cc2fbc16.sandbox.novita.ai
-- **GitHub** : (À configurer)
-- **Production Cloudflare** : (À déployer)
+### 🎤 Saisie Vocale Intelligente
+- **Reconnaissance vocale** en français (Chrome/Edge)
+- **Détection automatique** : client, adresse, téléphone
+- **Extraction des prestations** avec quantités et prix
+- **Assistant IA conversationnel** qui pose des questions pour compléter les infos manquantes
 
-## 📊 Architecture des données
+### 📊 Génération de Devis en Temps Réel
+- **Interface split** : vocal à gauche, devis à droite
+- **Calcul automatique** des totaux HT, TVA, TTC
+- **Lots automatiques** : l'IA sépare les différents types de travaux
+- **Prix réalistes** basés sur le marché BTP français 2024-2025
+- **Édition manuelle** : champs modifiables après génération
 
-### Modèle de données
-Le devis comprend :
-- **Informations entreprise** : Nom, adresse, téléphone de l'artisan
-- **Informations client** : Nom, adresse, téléphone
-- **Prestations** : Liste des prestations avec désignation, quantité, prix unitaire HT et total HT
-- **Totaux** : Total HT, TVA (configurable), Total TTC
-- **Conditions de paiement** : Texte libre pour les modalités de paiement
-- **Métadonnées** : Date, numéro de devis, timestamp de génération
+### 🤖 IA Apprenante et Personnalisée
+- **Mode conversationnel** : l'IA pose 2-4 questions ciblées avant de générer
+- **Utilise VOS prix** en priorité depuis votre base de données
+- **Prix du marché** en fallback si aucun prix personnel trouvé
+- **Apprentissage automatique** : extrait les prix de chaque devis validé
 
-### Services de stockage
-- **Version actuelle** : Stockage temporaire côté client (localStorage possible dans une future version)
-- **Pas de base de données** pour le moment (tout en mémoire navigateur)
-- **Export** : Génération de PDF côté client avec jsPDF
+### 📁 Historique Complet des Devis
+- **Liste de tous vos devis** avec recherche et filtres
+- **Statuts** : Brouillon / Envoyé / Accepté / Refusé
+- **Statistiques** : nombre de devis, CA potentiel
+- **Duplication en 1 clic** pour réutiliser un devis existant
+- **Sauvegarde automatique** à l'export PDF
 
-## 👤 Guide d'utilisation
+### 💰 Base de Prix Personnelle
+- **Extraction automatique** des prix depuis vos devis validés
+- **Organisation par catégorie** : parquet, peinture, plomberie, etc.
+- **Compteur d'usage** : voir vos prestations les plus utilisées
+- **L'IA s'adapte** : utilise automatiquement vos prix réels
 
-### 1. Saisie vocale
-1. Cliquez sur "**Commencer la dictée**"
-2. Autorisez l'accès au microphone si demandé
-3. Dictez naturellement votre devis
+### 📄 Export PDF Professionnel
+- **Design propre** avec logo et coordonnées entreprise
+- **Sections claires** : Client / Prestations / Totaux / Conditions
+- **Impression optimisée** avec CSS spécifique
+- **Sauvegarde auto** dans l'historique lors de l'export
 
-**Exemple de dictée** :
-> "Client Jean Dupont, 15 rue de la Paix Paris. Prestation peinture chambre 12 mètres carrés à 25 euros le mètre carré. Fourniture peinture 3 pots à 45 euros."
+### ⚙️ Paramètres Entreprise
+- **Configuration unique** : nom, adresse, téléphone, SIRET, email
+- **Conditions de paiement** par défaut
+- **Taux de TVA** par défaut
+- **Clé API OpenAI** pour l'assistant IA
+- **Stockage local** : vos données restent chez vous (localStorage)
 
-4. Cliquez sur "**Arrêter la dictée**" quand vous avez fini
+## 🎯 Workflow typique
 
-### 2. Analyse et remplissage
-1. Cliquez sur "**Analyser et remplir le devis**"
-2. L'application détecte automatiquement :
-   - Le nom du client
-   - L'adresse
-   - Le téléphone
-   - Les prestations avec quantités et prix
+### 1️⃣ Première utilisation
+1. **Cliquez sur "Paramètres"**
+2. Remplissez vos **informations d'entreprise**
+3. Ajoutez votre **clé API OpenAI** (optionnel mais recommandé)
+4. Enregistrez
 
-### 3. Modification manuelle
-Vous pouvez modifier tous les champs directement :
-- Informations client
-- Informations artisan
-- Prestations (ajout/suppression de lignes)
-- Taux de TVA
-- Conditions de paiement
+### 2️⃣ Créer un devis
+1. **"Commencer la dictée"** (microphone)
+2. Dictez : *"Client Jean Dupont, 15 rue de la Paix Paris. Je veux faire un parquet dans une chambre de 12 mètres carrés"*
+3. Cliquez **"Assistant IA"**
+4. Répondez aux questions de l'IA (si besoin)
+5. Cliquez **"Appliquer au devis"**
+6. Vérifiez et ajustez manuellement si nécessaire
+7. **"Exporter PDF"** → sauvegarde automatique dans l'historique
 
-Les totaux se recalculent automatiquement !
+### 3️⃣ Réutiliser un devis existant
+1. Onglet **"Historique"**
+2. Trouvez le devis similaire
+3. Cliquez **"Dupliquer"**
+4. Modifiez client et prestations
+5. Exportez le nouveau devis
 
-### 4. Export PDF
-Cliquez sur "**Export PDF**" pour télécharger le devis au format PDF professionnel.
+### 4️⃣ Gérer votre base de prix
+1. Onglet **"Ma base de prix"**
+2. Consultez les prix extraits de vos devis
+3. Cliquez **"Actualiser depuis les devis"** pour synchroniser
+4. L'IA utilisera automatiquement ces prix dans les prochains devis
 
-## 🚀 Statut de déploiement
+## 🔧 Architecture technique
 
-- **Environnement** : Cloudflare Pages (Hono framework)
-- **Statut** : ✅ Actif en sandbox
-- **Stack technique** :
-  - Backend : Hono (TypeScript)
-  - Frontend : Vanilla JavaScript
-  - UI : TailwindCSS + FontAwesome
-  - Export PDF : jsPDF
-  - Reconnaissance vocale : Web Speech API (Chrome/Edge)
+### Stack
+- **Frontend** : HTML, TailwindCSS, JavaScript vanilla
+- **Backend** : Hono (Cloudflare Workers)
+- **IA** : OpenAI GPT-4o-mini
+- **Stockage** : localStorage (navigateur)
+- **Reconnaissance vocale** : Web Speech API
 
-## ✨ Fonctionnalités implémentées
+### Structure de données
 
-### Version 1.0 (Actuelle)
-- ✅ Interface à deux colonnes (saisie vocale / devis)
-- ✅ Reconnaissance vocale en français
-- ✅ Analyse intelligente du texte pour extraire :
-  - Nom du client (détection de "client", "monsieur", "madame")
-  - Adresse (détection automatique)
-  - Téléphone (format français)
-  - Prestations avec quantités et prix
-- ✅ Gestion des prestations :
-  - Ajout/suppression de lignes
-  - Calcul automatique des totaux par ligne
-- ✅ Calculs automatiques :
-  - Total HT
-  - TVA configurable (par défaut 20%)
-  - Total TTC
-- ✅ Export PDF professionnel
-- ✅ Design responsive et moderne
-- ✅ Conditions de paiement personnalisables
-
-## 🔮 Fonctionnalités à venir
-
-### Version 2.0 (Planifiée)
-- 🔄 Intégration OpenAI GPT pour améliorer l'analyse du texte dicté
-- 🔄 Meilleure détection des nuances et des synonymes
-- 🔄 Correction automatique des erreurs de reconnaissance vocale
-- 🔄 Sauvegarde locale des devis (localStorage)
-- 🔄 Historique des devis créés
-- 🔄 Templates de devis personnalisables
-- 🔄 Ajout de logo d'entreprise
-- 🔄 Envoi du devis par email
-
-## 🛠️ Prochaines étapes recommandées
-
-1. **Tester l'application** avec des cas d'usage réels d'artisans
-2. **Configurer l'API OpenAI** pour améliorer la qualité de l'analyse
-3. **Ajouter la sauvegarde locale** des devis avec localStorage
-4. **Déployer sur Cloudflare Pages** pour production
-5. **Créer un système de templates** pour différents types de prestations
-6. **Ajouter la possibilité d'uploader un logo** d'entreprise
-
-## 💡 Notes techniques
-
-### Compatibilité navigateur
-- **Reconnaissance vocale** : Chrome, Edge, Safari (iOS 14.5+)
-- **Export PDF** : Tous les navigateurs modernes
-- **Design responsive** : Mobile, tablette, desktop
-
-### Limitations actuelles
-- Pas de sauvegarde serveur (tout côté client)
-- Reconnaissance vocale nécessite une connexion internet
-- Analyse basique du texte (sera améliorée avec OpenAI)
-
-### Commandes utiles
-```bash
-# Démarrer en local
-npm run build
-pm2 start ecosystem.config.cjs
-
-# Voir les logs
-pm2 logs webapp --nostream
-
-# Redémarrer
-fuser -k 3000/tcp && pm2 restart webapp
-
-# Déployer sur Cloudflare
-npm run deploy
+#### Devis (historique_devis)
+```json
+{
+  "id": "1735123456789",
+  "numero": "DEV-20241224-0001",
+  "date_creation": "2024-12-24T10:30:00Z",
+  "client_nom": "Jean Dupont",
+  "client_adresse": "15 rue de la Paix, 75002 Paris",
+  "client_tel": "06 12 34 56 78",
+  "artisan_nom": "Entreprise Martin",
+  "artisan_adresse": "...",
+  "lots": [
+    {
+      "nom_lot": "PARQUET - REVÊTEMENT SOL",
+      "prestations": [
+        {
+          "designation": "Fourniture parquet stratifié",
+          "quantite": 27.5,
+          "unite": "m²",
+          "prix_unitaire": 20.00,
+          "type": "fourniture"
+        }
+      ]
+    }
+  ],
+  "total_ht": 750.00,
+  "tva_taux": 20,
+  "tva_montant": 150.00,
+  "total_ttc": 900.00,
+  "conditions_paiement": "Acompte de 30%...",
+  "statut": "brouillon"
+}
 ```
+
+#### Base de prix (base_prix)
+```json
+{
+  "id": "1735123456789",
+  "designation": "Pose parquet stratifié",
+  "categorie": "parquet",
+  "type": "main_oeuvre",
+  "prix_unitaire": 30.00,
+  "unite": "m²",
+  "notes": "Extrait du devis DEV-20241224-0001",
+  "usage_count": 5,
+  "date_creation": "2024-12-24T10:30:00Z",
+  "date_modification": "2024-12-25T14:20:00Z"
+}
+```
+
+## 💡 Conseils d'utilisation
+
+### Pour de meilleurs résultats avec la saisie vocale
+- Dictez **clairement** et **lentement**
+- Utilisez des mots-clés : *"Client"*, *"Prestation"*, *"Fourniture"*
+- Indiquez toujours les **quantités** et **unités**
+- Exemple : *"Prestation pose de parquet 25 mètres carrés à 30 euros le mètre carré"*
+
+### Pour optimiser l'IA
+- **Validez régulièrement** vos devis pour alimenter la base de prix
+- **Corrigez les prix** avant export si l'IA se trompe
+- **Vos prix personnels** seront utilisés en priorité
+- Plus vous l'utilisez, plus l'IA devient précise pour VOTRE activité
+
+### Sécurité et confidentialité
+- ✅ Toutes les données stockées **localement** (localStorage)
+- ✅ Aucune synchronisation cloud par défaut
+- ✅ Votre clé API OpenAI reste **privée**
+- ❌ Si vous videz le cache navigateur, vous perdez vos données
+- 💡 Pensez à exporter régulièrement vos devis en PDF
+
+## 🚀 Prochaines améliorations possibles
+
+### En développement
+- [ ] Export Excel/CSV de l'historique
+- [ ] Envoi direct par email du devis
+- [ ] Partage WhatsApp du PDF
+- [ ] Templates de prestations fréquentes
+- [ ] Signature électronique client
+- [ ] Statistiques avancées (CA, taux conversion)
+- [ ] Backup automatique dans le cloud
+- [ ] Application mobile PWA
+
+## 📞 Support
+
+Pour toute question ou demande d'amélioration, contactez l'équipe de développement.
 
 ---
 
-**Dernière mise à jour** : 24 décembre 2025
+**Version** : 2.0  
+**Dernière mise à jour** : 24 décembre 2024  
+**Créé avec** : ❤️ pour les artisans qui en ont marre de l'administratif
