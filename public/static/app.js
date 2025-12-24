@@ -1219,11 +1219,317 @@ function exportToPDF() {
         return;
     }
     
-    // Utiliser window.print() pour l'instant (simple et efficace)
-    // TODO: Implémenter jsPDF pour un meilleur contrôle
-    window.print();
+    // Vérifier que jsPDF est chargé
+    if (typeof window.jspdf === 'undefined') {
+        alert('❌ Erreur : bibliothèque PDF non chargée');
+        return;
+    }
     
-    alert('✅ Devis sauvegardé dans l\'historique !\n\n💡 Consultez l\'historique pour gérer vos devis.');
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 15;
+        const contentWidth = pageWidth - (margin * 2);
+        
+        let yPosition = margin;
+        
+        // ========================================
+        // EN-TÊTE ENTREPRISE
+        // ========================================
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(31, 78, 121); // Bleu foncé
+        doc.text(devis.artisan_nom || 'Entreprise', margin, yPosition);
+        
+        yPosition += 7;
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(60, 60, 60);
+        
+        if (devis.artisan_adresse) {
+            doc.text(devis.artisan_adresse, margin, yPosition);
+            yPosition += 5;
+        }
+        
+        const contactLine = [];
+        if (devis.artisan_tel) contactLine.push('Tél: ' + devis.artisan_tel);
+        if (devis.artisan_email) contactLine.push('Email: ' + devis.artisan_email);
+        if (contactLine.length > 0) {
+            doc.text(contactLine.join(' • '), margin, yPosition);
+            yPosition += 5;
+        }
+        
+        if (devis.artisan_siret) {
+            doc.text('SIRET: ' + devis.artisan_siret, margin, yPosition);
+            yPosition += 5;
+        }
+        
+        // Ligne de séparation
+        yPosition += 3;
+        doc.setDrawColor(200, 200, 200);
+        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 10;
+        
+        // ========================================
+        // TITRE DEVIS
+        // ========================================
+        doc.setFontSize(20);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(31, 78, 121);
+        doc.text('DEVIS', pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 10;
+        
+        // ========================================
+        // INFO DEVIS ET CLIENT (2 COLONNES)
+        // ========================================
+        const col1X = margin;
+        const col2X = pageWidth / 2 + 5;
+        let col1Y = yPosition;
+        let col2Y = yPosition;
+        
+        // Colonne gauche : Info devis
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text('Numéro:', col1X, col1Y);
+        col1Y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.text(devis.numero, col1X, col1Y);
+        col1Y += 8;
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text('Date:', col1X, col1Y);
+        col1Y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.text(new Date(devis.date_creation).toLocaleDateString('fr-FR'), col1X, col1Y);
+        
+        // Colonne droite : Info client
+        doc.setFont('helvetica', 'bold');
+        doc.text('Client:', col2X, col2Y);
+        col2Y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.text(devis.client_nom, col2X, col2Y);
+        col2Y += 6;
+        
+        if (devis.client_adresse) {
+            const addrLines = doc.splitTextToSize(devis.client_adresse, contentWidth / 2 - 10);
+            addrLines.forEach(line => {
+                doc.text(line, col2X, col2Y);
+                col2Y += 5;
+            });
+        }
+        
+        if (devis.client_tel) {
+            doc.text('Tél: ' + devis.client_tel, col2X, col2Y);
+            col2Y += 5;
+        }
+        
+        yPosition = Math.max(col1Y, col2Y) + 10;
+        
+        // ========================================
+        // PRESTATIONS PAR LOT
+        // ========================================
+        if (devis.lots && devis.lots.length > 0) {
+            devis.lots.forEach((lot, lotIndex) => {
+                // Vérifier s'il reste assez de place pour le lot
+                if (yPosition > pageHeight - 60) {
+                    doc.addPage();
+                    yPosition = margin;
+                }
+                
+                // En-tête du lot
+                doc.setFillColor(59, 130, 246); // Bleu
+                doc.rect(margin, yPosition, contentWidth, 8, 'F');
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(255, 255, 255);
+                doc.text('📦 ' + lot.nom_lot, margin + 3, yPosition + 5.5);
+                yPosition += 10;
+                
+                // Tableau des prestations du lot
+                const tableData = lot.prestations.map(p => [
+                    p.designation,
+                    p.quantite.toString(),
+                    p.unite || '',
+                    p.prix_unitaire.toFixed(2) + ' €',
+                    (p.quantite * p.prix_unitaire).toFixed(2) + ' €'
+                ]);
+                
+                // Calculer la hauteur estimée du tableau
+                const estimatedHeight = (tableData.length + 1) * 8 + 10;
+                
+                // Si le tableau ne rentre pas, nouvelle page
+                if (yPosition + estimatedHeight > pageHeight - 40) {
+                    doc.addPage();
+                    yPosition = margin;
+                    
+                    // Répéter l'en-tête du lot sur la nouvelle page
+                    doc.setFillColor(59, 130, 246);
+                    doc.rect(margin, yPosition, contentWidth, 8, 'F');
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(255, 255, 255);
+                    doc.text('📦 ' + lot.nom_lot + ' (suite)', margin + 3, yPosition + 5.5);
+                    yPosition += 10;
+                }
+                
+                // En-tête du tableau
+                doc.setFillColor(240, 240, 240);
+                doc.rect(margin, yPosition, contentWidth, 7, 'F');
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(0, 0, 0);
+                
+                const colWidths = [contentWidth * 0.45, contentWidth * 0.12, contentWidth * 0.12, contentWidth * 0.15, contentWidth * 0.16];
+                let xPos = margin;
+                
+                ['Désignation', 'Qté', 'Unité', 'P.U. HT', 'Total HT'].forEach((header, i) => {
+                    doc.text(header, xPos + 2, yPosition + 5);
+                    xPos += colWidths[i];
+                });
+                yPosition += 7;
+                
+                // Lignes du tableau
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                tableData.forEach((row, rowIndex) => {
+                    // Vérifier si on doit passer à la page suivante
+                    if (yPosition > pageHeight - 30) {
+                        doc.addPage();
+                        yPosition = margin;
+                        
+                        // Répéter l'en-tête sur nouvelle page
+                        doc.setFillColor(240, 240, 240);
+                        doc.rect(margin, yPosition, contentWidth, 7, 'F');
+                        doc.setFontSize(9);
+                        doc.setFont('helvetica', 'bold');
+                        
+                        xPos = margin;
+                        ['Désignation', 'Qté', 'Unité', 'P.U. HT', 'Total HT'].forEach((header, i) => {
+                            doc.text(header, xPos + 2, yPosition + 5);
+                            xPos += colWidths[i];
+                        });
+                        yPosition += 7;
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(8);
+                    }
+                    
+                    // Fond alterné
+                    if (rowIndex % 2 === 0) {
+                        doc.setFillColor(250, 250, 250);
+                        doc.rect(margin, yPosition, contentWidth, 6, 'F');
+                    }
+                    
+                    xPos = margin;
+                    row.forEach((cell, i) => {
+                        const align = i > 0 ? 'right' : 'left';
+                        const cellX = i > 0 ? xPos + colWidths[i] - 2 : xPos + 2;
+                        doc.text(cell, cellX, yPosition + 4, { align: align });
+                        xPos += colWidths[i];
+                    });
+                    yPosition += 6;
+                });
+                
+                yPosition += 5;
+            });
+        }
+        
+        // ========================================
+        // TOTAUX
+        // ========================================
+        // S'assurer qu'il reste de la place pour les totaux
+        if (yPosition > pageHeight - 50) {
+            doc.addPage();
+            yPosition = margin;
+        }
+        
+        yPosition += 5;
+        doc.setDrawColor(200, 200, 200);
+        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 8;
+        
+        const totalX = pageWidth - margin - 50;
+        const labelX = totalX - 40;
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Total HT:', labelX, yPosition, { align: 'right' });
+        doc.text(devis.total_ht.toFixed(2) + ' €', totalX, yPosition, { align: 'right' });
+        yPosition += 6;
+        
+        doc.text('TVA (' + devis.tva_taux + '%):', labelX, yPosition, { align: 'right' });
+        doc.text(devis.tva_montant.toFixed(2) + ' €', totalX, yPosition, { align: 'right' });
+        yPosition += 8;
+        
+        // Total TTC mis en valeur
+        doc.setFillColor(59, 130, 246);
+        doc.rect(labelX - 45, yPosition - 5, 95, 8, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(255, 255, 255);
+        doc.text('Total TTC:', labelX, yPosition, { align: 'right' });
+        doc.text(devis.total_ttc.toFixed(2) + ' €', totalX, yPosition, { align: 'right' });
+        yPosition += 10;
+        
+        // ========================================
+        // CONDITIONS DE PAIEMENT
+        // ========================================
+        if (devis.conditions_paiement) {
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            yPosition += 5;
+            
+            if (yPosition > pageHeight - 30) {
+                doc.addPage();
+                yPosition = margin;
+            }
+            
+            doc.text('Conditions de paiement:', margin, yPosition);
+            yPosition += 6;
+            
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            const conditionsLines = doc.splitTextToSize(devis.conditions_paiement, contentWidth);
+            conditionsLines.forEach(line => {
+                if (yPosition > pageHeight - 20) {
+                    doc.addPage();
+                    yPosition = margin;
+                }
+                doc.text(line, margin, yPosition);
+                yPosition += 5;
+            });
+        }
+        
+        // ========================================
+        // PIED DE PAGE (sur toutes les pages)
+        // ========================================
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'italic');
+            doc.setTextColor(120, 120, 120);
+            doc.text(
+                'Devis valable 30 jours - Page ' + i + ' sur ' + pageCount,
+                pageWidth / 2,
+                pageHeight - 10,
+                { align: 'center' }
+            );
+        }
+        
+        // Sauvegarder le PDF
+        doc.save(`Devis_${devis.numero}.pdf`);
+        
+        alert('✅ Devis exporté en PDF et sauvegardé dans l\'historique !\n\n💡 Consultez l\'historique pour gérer vos devis.');
+        
+    } catch (error) {
+        console.error('Erreur export PDF:', error);
+        alert('❌ Erreur lors de l\'export PDF: ' + error.message);
+    }
 }
 
 // Charger un devis existant depuis l'historique
