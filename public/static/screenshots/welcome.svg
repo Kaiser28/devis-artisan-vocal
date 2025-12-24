@@ -1,0 +1,35 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="400" fill="#f3f4f6"/>
+  <rect x="50" y="50" width="500" height="300" fill="white" rx="10" stroke="#e5e7eb" stroke-width="2"/>
+  
+  <!-- Logo et titre -->
+  <circle cx="120" cy="120" r="30" fill="#3b82f6" opacity="0.2"/>
+  <text x="300" y="130" font-family="Arial" font-size="32" font-weight="bold" fill="#111827" text-anchor="middle">
+    👋 Bienvenue !
+  </text>
+  
+  <!-- Description -->
+  <text x="300" y="180" font-family="Arial" font-size="16" fill="#6b7280" text-anchor="middle">
+    Tutoriel interactif
+  </text>
+  <text x="300" y="205" font-family="Arial" font-size="16" fill="#6b7280" text-anchor="middle">
+    Créez votre premier devis en 2 minutes
+  </text>
+  
+  <!-- Icônes features -->
+  <circle cx="150" cy="260" r="20" fill="#3b82f6" opacity="0.2"/>
+  <text x="150" y="268" font-family="Arial" font-size="20" text-anchor="middle">🎤</text>
+  <text x="150" y="295" font-family="Arial" font-size="12" fill="#6b7280" text-anchor="middle">Vocal</text>
+  
+  <circle cx="250" cy="260" r="20" fill="#10b981" opacity="0.2"/>
+  <text x="250" y="268" font-family="Arial" font-size="20" text-anchor="middle">🤖</text>
+  <text x="250" y="295" font-family="Arial" font-size="12" fill="#6b7280" text-anchor="middle">IA</text>
+  
+  <circle cx="350" cy="260" r="20" fill="#8b5cf6" opacity="0.2"/>
+  <text x="350" y="268" font-family="Arial" font-size="20" text-anchor="middle">📄</text>
+  <text x="350" y="295" font-family="Arial" font-size="12" fill="#6b7280" text-anchor="middle">PDF</text>
+  
+  <circle cx="450" cy="260" r="20" fill="#f59e0b" opacity="0.2"/>
+  <text x="450" y="268" font-family="Arial" font-size="20" text-anchor="middle">💰</text>
+  <text x="450" y="295" font-family="Arial" font-size="12" fill="#6b7280" text-anchor="middle">Prix</text>
+</svg>

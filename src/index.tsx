@@ -407,6 +407,10 @@ app.get('/', (c) => {
                         </button>
                     </div>
                     <div class="flex space-x-2">
+                        <button id="tutorialBtn" onclick="window.startTutorial()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg">
+                            <i class="fas fa-graduation-cap mr-2"></i>
+                            🎓 Tutoriel
+                        </button>
                         <button id="settingsBtn" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg transition">
                             <i class="fas fa-cog mr-2"></i>
                             Paramètres
@@ -786,6 +790,7 @@ Devis valable 30 jours</textarea>
         <!-- Fin Page Base de Prix -->
         
         <script src="/static/app.js"></script>
+        <script type="module" src="/static/tutorial-config.js"></script>
     </body>
     </html>
   `)
