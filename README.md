@@ -165,6 +165,35 @@ Application web complète pour les artisans du BTP permettant de créer des devi
 - ❌ Si vous videz le cache navigateur, vous perdez vos données
 - 💡 Pensez à exporter régulièrement vos devis en PDF
 
+## 📦 Sauvegarde du projet
+
+### Backup disponible
+- **Fichier** : `devis-artisan-vocal-v1-stable.tar.gz`
+- **URL** : https://www.genspark.ai/api/files/s/tu8JiqI5
+- **Taille** : 400 KB
+- **Description** : Version stable complète avec toutes fonctionnalités opérationnelles
+- **Date** : 24 décembre 2024
+
+### Contenu du backup
+✅ Code source complet (HTML, CSS, JavaScript)  
+✅ Configuration Cloudflare Workers (Hono)  
+✅ Historique Git complet (tous les commits)  
+✅ Documentation (README.md)  
+✅ Configuration PM2 (ecosystem.config.cjs)  
+
+### Pour restaurer
+```bash
+# Télécharger et extraire
+curl -L https://www.genspark.ai/api/files/s/tu8JiqI5 -o devis-artisan-backup.tar.gz
+tar -xzf devis-artisan-backup.tar.gz
+
+# Le projet sera restauré dans son chemin absolu d'origine
+cd /home/user/webapp
+npm install
+npm run build
+pm2 start ecosystem.config.cjs
+```
+
 ## 🚀 Prochaines améliorations possibles
 
 ### En développement
