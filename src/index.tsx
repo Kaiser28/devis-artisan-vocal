@@ -359,8 +359,12 @@ app.get('/', (c) => {
             0%, 100% { opacity: 1; }
             50% { opacity: .5; }
           }
-          .page-content { display: none; }
-          .page-content:not(.hidden) { display: block; }
+          .page-content { 
+            display: none; 
+          }
+          .page-content.active { 
+            display: block; 
+          }
           .nav-link.active {
             color: #2563eb;
             border-bottom-color: #2563eb;
@@ -397,7 +401,7 @@ app.get('/', (c) => {
         </nav>
         
         <!-- Page Nouveau Devis -->
-        <div id="pageNewDevis" class="page-content">
+        <div id="pageNewDevis" class="page-content active">
         <div class="min-h-screen p-4">
             <div class="flex justify-between items-center mb-6 max-w-7xl mx-auto">
                 <h1 class="text-3xl font-bold text-gray-800">
@@ -694,7 +698,7 @@ Devis valable 30 jours</textarea>
         <!-- Fin Page Nouveau Devis -->
         
         <!-- Page Historique -->
-        <div id="pageHistorique" class="page-content hidden">
+        <div id="pageHistorique" class="page-content">
             <div class="min-h-screen p-4">
                 <div class="max-w-7xl mx-auto">
                     <h1 class="text-3xl font-bold text-gray-800 mb-6">
@@ -734,7 +738,7 @@ Devis valable 30 jours</textarea>
         <!-- Fin Page Historique -->
         
         <!-- Page Base de Prix -->
-        <div id="pageBasePrix" class="page-content hidden">
+        <div id="pageBasePrix" class="page-content">
             <div class="min-h-screen p-4">
                 <div class="max-w-7xl mx-auto">
                     <h1 class="text-3xl font-bold text-gray-800 mb-6">

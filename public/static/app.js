@@ -1281,13 +1281,13 @@ function setupNavigation() {
 function showPage(pageId) {
     // Masquer toutes les pages
     document.querySelectorAll('.page-content').forEach(page => {
-        page.classList.add('hidden');
+        page.classList.remove('active');
     });
     
     // Afficher la page sélectionnée
     const targetPage = document.getElementById(pageId);
     if (targetPage) {
-        targetPage.classList.remove('hidden');
+        targetPage.classList.add('active');
     }
 }
 
