@@ -289,11 +289,22 @@ function calculateTotals() {
     let totalHT = 0;
     
     rows.forEach(row => {
-        const qte = parseFloat(row.querySelector('.prestation-qte').value) || 0;
-        const pu = parseFloat(row.querySelector('.prestation-pu').value) || 0;
+        // Skip separator rows (lot headers)
+        const qteInput = row.querySelector('.prestation-qte');
+        const puInput = row.querySelector('.prestation-pu');
+        
+        if (!qteInput || !puInput) {
+            return; // C'est une ligne de séparateur, on la saute
+        }
+        
+        const qte = parseFloat(qteInput.value) || 0;
+        const pu = parseFloat(puInput.value) || 0;
         const total = qte * pu;
         
-        row.querySelector('.prestation-total').textContent = formatPrice(total);
+        const totalCell = row.querySelector('.prestation-total');
+        if (totalCell) {
+            totalCell.textContent = formatPrice(total);
+        }
         totalHT += total;
     });
     
