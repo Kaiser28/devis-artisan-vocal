@@ -392,6 +392,10 @@ export class InteractiveTutorial {
             this.setupValidation(step);
         } else {
             this.overlay.querySelector('.tutorial-validation').style.display = 'none';
+            // Remettre le texte par défaut du bouton "Passer"
+            const skipBtn = this.overlay.querySelector('.tutorial-skip');
+            skipBtn.textContent = 'Passer';
+            skipBtn.onclick = () => this.skip();
         }
         
         // Sauvegarder progression
@@ -408,6 +412,9 @@ export class InteractiveTutorial {
         const element = document.querySelector(selector);
         if (!element) return;
         
+        // Sauvegarder l'élément ciblé
+        this.currentTargetElement = element;
+        
         const rect = element.getBoundingClientRect();
         const spotlight = this.overlay.querySelector('.tutorial-spotlight');
         
@@ -416,6 +423,11 @@ export class InteractiveTutorial {
         spotlight.style.width = `${rect.width + 16}px`;
         spotlight.style.height = `${rect.height + 16}px`;
         spotlight.style.display = 'block';
+        
+        // Rendre l'élément interactif en augmentant son z-index
+        element.style.position = element.style.position || 'relative';
+        element.style.zIndex = '100001';
+        element.style.pointerEvents = 'auto';
     }
     
     /**
@@ -424,6 +436,13 @@ export class InteractiveTutorial {
     hideHighlight() {
         const spotlight = this.overlay.querySelector('.tutorial-spotlight');
         spotlight.style.display = 'none';
+        
+        // Restaurer l'élément ciblé
+        if (this.currentTargetElement) {
+            this.currentTargetElement.style.zIndex = '';
+            this.currentTargetElement.style.pointerEvents = '';
+            this.currentTargetElement = null;
+        }
     }
     
     /**
@@ -499,13 +518,24 @@ export class InteractiveTutorial {
     setupValidation(step) {
         const validationEl = this.overlay.querySelector('.tutorial-validation');
         const nextBtn = this.overlay.querySelector('.tutorial-next');
+        const skipBtn = this.overlay.querySelector('.tutorial-skip');
         
         validationEl.className = 'tutorial-validation waiting';
         validationEl.textContent = '⏳ ' + (step.validateMessage || 'En attente de votre action...');
         nextBtn.disabled = true;
         
+        // Le bouton "Passer" permet de continuer sans valider
+        skipBtn.textContent = 'Passer cette étape';
+        skipBtn.onclick = () => {
+            this.stopValidation = true;
+            this.next();
+        };
+        
         // Vérifier validation
+        this.stopValidation = false;
         const checkValidation = () => {
+            if (this.stopValidation) return; // Arrêter si on a cliqué sur "Passer"
+            
             if (step.validate()) {
                 validationEl.className = 'tutorial-validation success';
                 validationEl.textContent = '✓ ' + (step.successMessage || 'Parfait ! Continuez.');
