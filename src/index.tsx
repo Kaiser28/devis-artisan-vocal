@@ -5,6 +5,100 @@ const app = new Hono()
 
 app.use('/api/*', cors())
 
+// Route API pour l'assistant IA
+app.post('/api/ai-assistant', async (c) => {
+  try {
+    const { prompt, apiKey } = await c.req.json()
+    
+    if (!apiKey) {
+      return c.json({ error: 'Clé API OpenAI non configurée. Ajoutez-la dans les paramètres.' }, 400)
+    }
+    
+    if (!prompt || prompt.trim() === '') {
+      return c.json({ error: 'Aucun texte fourni' }, 400)
+    }
+    
+    // Appel à l'API OpenAI
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `Tu es un assistant expert en BTP qui aide les artisans à construire des devis détaillés et professionnels.
+
+Ton rôle :
+1. Analyser la demande de l'artisan
+2. Identifier tous les postes de travaux nécessaires
+3. Proposer des quantités réalistes avec marges (ex: +10% pour chutes)
+4. Suggérer des prix moyens du marché français (2024)
+5. Détailler TOUTES les prestations : main d'œuvre, fournitures, accessoires
+
+Format de réponse OBLIGATOIRE en JSON :
+{
+  "analyse": "Explication courte de ce qui est nécessaire",
+  "prestations": [
+    {
+      "designation": "Description claire",
+      "quantite": 12.5,
+      "unite": "m²",
+      "prix_unitaire": 25.00,
+      "type": "main_oeuvre" ou "fourniture"
+    }
+  ],
+  "conseils": "Conseils professionnels pour l'artisan"
+}
+
+Prix moyens 2024 France (indicatifs) :
+- Parquet stratifié : 20-35€/m² fourniture, 15-25€/m² pose
+- Parquet massif : 40-80€/m² fourniture, 25-40€/m² pose  
+- Peinture murs : 3-6€/m² fourniture, 15-25€/m² main d'œuvre
+- Plomberie : 40-60€/h main d'œuvre
+- Électricité : 40-70€/h main d'œuvre
+- Carrelage : 20-50€/m² fourniture, 30-50€/m² pose
+
+TOUJOURS inclure :
+- Main d'œuvre séparée des fournitures
+- Consommables (colle, vis, etc.)
+- Évacuation déchets si pertinent
+- Préparation surface si nécessaire`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    })
+    
+    if (!response.ok) {
+      const error = await response.text()
+      console.error('Erreur OpenAI:', error)
+      return c.json({ error: 'Erreur lors de l\'appel à OpenAI: ' + response.statusText }, response.status)
+    }
+    
+    const data = await response.json()
+    const aiResponse = data.choices[0]?.message?.content
+    
+    if (!aiResponse) {
+      return c.json({ error: 'Aucune réponse de l\'IA' }, 500)
+    }
+    
+    return c.json({ response: aiResponse })
+    
+  } catch (error) {
+    console.error('Erreur serveur:', error)
+    return c.json({ error: 'Erreur serveur: ' + error.message }, 500)
+  }
+})
+
 app.get('/', (c) => {
   return c.html(`
     <!DOCTYPE html>
@@ -77,16 +171,40 @@ app.get('/', (c) => {
                             <i class="fas fa-trash mr-2"></i>
                             Effacer
                         </button>
+                        <button id="aiAssistBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                            <i class="fas fa-robot mr-2"></i>
+                            Assistant IA - Construire le devis
+                        </button>
                         <button id="analyzeBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
                             <i class="fas fa-magic mr-2"></i>
                             Analyser et remplir le devis
                         </button>
                     </div>
                     
+                    <div id="aiResponse" class="mt-4 p-4 bg-purple-50 rounded-lg hidden">
+                        <h4 class="font-bold text-purple-800 mb-2">
+                            <i class="fas fa-robot mr-2"></i>
+                            Réponse de l'assistant IA :
+                        </h4>
+                        <div id="aiResponseText" class="text-sm text-gray-700 whitespace-pre-wrap"></div>
+                        <button id="applyAiBtn" class="mt-3 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                            <i class="fas fa-check mr-2"></i>
+                            Appliquer au devis
+                        </button>
+                    </div>
+                    
                     <div class="mt-4 p-4 bg-blue-50 rounded-lg">
-                        <p class="text-sm text-gray-700"><strong>💡 Astuce :</strong> Dictez naturellement. Exemple :</p>
+                        <p class="text-sm text-gray-700"><strong>💡 Mode Assistant IA :</strong></p>
                         <p class="text-xs text-gray-600 mt-2 italic">
-                            "Client Jean Dupont, 15 rue de la Paix Paris. Prestation peinture chambre 12 mètres carrés à 25 euros le mètre carré. Fourniture peinture 3 pots à 45 euros."
+                            Dictez simplement ce que vous voulez faire. L'IA vous guidera et construira le devis pour vous !
+                        </p>
+                        <p class="text-xs text-gray-600 mt-1 italic">
+                            Exemple : "Je veux faire un parquet dans une chambre de 12 mètres carrés"
+                        </p>
+                        <hr class="my-2 border-blue-200">
+                        <p class="text-sm text-gray-700 mt-2"><strong>💡 Mode Analyse classique :</strong></p>
+                        <p class="text-xs text-gray-600 mt-1 italic">
+                            "Client Jean Dupont, 15 rue de la Paix Paris. Prestation peinture chambre 12 mètres carrés à 25 euros le mètre carré."
                         </p>
                     </div>
                 </div>
@@ -249,6 +367,24 @@ Devis valable 30 jours</textarea>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Taux de TVA par défaut (%)</label>
                         <input type="number" id="settingsTVA" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="20" min="0" max="100" step="0.1">
+                    </div>
+                    
+                    <div class="border-t-2 border-gray-200 pt-4 mt-4">
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">
+                            <i class="fas fa-robot mr-2 text-purple-600"></i>
+                            Assistant IA (OpenAI)
+                        </h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Clé API OpenAI 
+                                <span class="text-gray-500">(optionnel)</span>
+                            </label>
+                            <input type="password" id="settingsOpenAIKey" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 font-mono text-sm" placeholder="sk-...">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Pour activer l'assistant IA qui vous aide à construire vos devis. 
+                                <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-600 hover:underline">Obtenir une clé API</a>
+                            </p>
+                        </div>
                     </div>
                     
                     <div class="bg-blue-50 p-4 rounded-lg">

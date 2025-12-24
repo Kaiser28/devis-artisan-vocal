@@ -103,6 +103,16 @@ function setupEventListeners() {
         document.getElementById('transcript').value = '';
     });
     
+    // Bouton assistant IA
+    document.getElementById('aiAssistBtn').addEventListener('click', function() {
+        callAIAssistant();
+    });
+    
+    // Bouton appliquer réponse IA
+    document.getElementById('applyAiBtn').addEventListener('click', function() {
+        applyAIResponse();
+    });
+    
     // Bouton analyser
     document.getElementById('analyzeBtn').addEventListener('click', function() {
         analyzeTranscript();
@@ -482,6 +492,7 @@ function openSettingsModal() {
     document.getElementById('settingsSiret').value = settings.siret || '';
     document.getElementById('settingsConditions').value = settings.conditions || 'Acompte de 30% à la commande\nSolde à la livraison\nDevis valable 30 jours';
     document.getElementById('settingsTVA').value = settings.tva || '20';
+    document.getElementById('settingsOpenAIKey').value = settings.openaiKey || '';
     
     // Afficher le modal
     document.getElementById('settingsModal').classList.remove('hidden');
@@ -512,7 +523,8 @@ function saveSettings() {
         email: document.getElementById('settingsEmail').value.trim(),
         siret: document.getElementById('settingsSiret').value.trim(),
         conditions: document.getElementById('settingsConditions').value,
-        tva: document.getElementById('settingsTVA').value
+        tva: document.getElementById('settingsTVA').value,
+        openaiKey: document.getElementById('settingsOpenAIKey').value.trim()
     };
     
     localStorage.setItem('artisanSettings', JSON.stringify(settings));
@@ -546,6 +558,9 @@ function newDevis() {
     // Réinitialiser le transcript
     document.getElementById('transcript').value = '';
     
+    // Cacher la réponse IA si visible
+    document.getElementById('aiResponse').classList.add('hidden');
+    
     // Générer nouveau numéro de devis
     initDevisDate();
     
@@ -553,4 +568,140 @@ function newDevis() {
     calculateTotals();
     
     alert('✅ Nouveau devis créé !');
+}
+
+// Appeler l'assistant IA
+let currentAIData = null;
+
+async function callAIAssistant() {
+    const text = document.getElementById('transcript').value.trim();
+    
+    if (!text) {
+        alert('⚠️ Dictez d\'abord ce que vous voulez faire.\n\nExemple : "Je veux faire un parquet dans une chambre de 12 mètres carrés"');
+        return;
+    }
+    
+    // Récupérer la clé API
+    const settings = JSON.parse(localStorage.getItem('artisanSettings') || '{}');
+    const apiKey = settings.openaiKey;
+    
+    if (!apiKey) {
+        alert('⚠️ Clé API OpenAI non configurée.\n\nAllez dans Paramètres > Assistant IA pour ajouter votre clé API.');
+        return;
+    }
+    
+    // Afficher un loader
+    const btn = document.getElementById('aiAssistBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>L\'IA réfléchit...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/ai-assistant', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: text,
+                apiKey: apiKey
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Erreur inconnue');
+        }
+        
+        // Afficher la réponse
+        displayAIResponse(data.response);
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('❌ Erreur: ' + error.message);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+function displayAIResponse(response) {
+    try {
+        // Essayer de parser le JSON
+        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            currentAIData = JSON.parse(jsonMatch[0]);
+            
+            // Formater l'affichage
+            let displayText = '';
+            
+            if (currentAIData.analyse) {
+                displayText += '📋 ' + currentAIData.analyse + '\n\n';
+            }
+            
+            if (currentAIData.prestations && currentAIData.prestations.length > 0) {
+                displayText += '✅ PRESTATIONS PROPOSÉES :\n\n';
+                currentAIData.prestations.forEach((p, index) => {
+                    displayText += `${index + 1}. ${p.designation}\n`;
+                    displayText += `   Quantité: ${p.quantite} ${p.unite || ''}\n`;
+                    displayText += `   Prix unitaire: ${p.prix_unitaire}€\n`;
+                    displayText += `   Total: ${(p.quantite * p.prix_unitaire).toFixed(2)}€\n\n`;
+                });
+            }
+            
+            if (currentAIData.conseils) {
+                displayText += '💡 CONSEILS :\n' + currentAIData.conseils;
+            }
+            
+            document.getElementById('aiResponseText').textContent = displayText;
+            document.getElementById('aiResponse').classList.remove('hidden');
+            
+        } else {
+            // Réponse non JSON
+            currentAIData = null;
+            document.getElementById('aiResponseText').textContent = response;
+            document.getElementById('aiResponse').classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Erreur parsing:', error);
+        currentAIData = null;
+        document.getElementById('aiResponseText').textContent = response;
+        document.getElementById('aiResponse').classList.remove('hidden');
+    }
+}
+
+function applyAIResponse() {
+    if (!currentAIData || !currentAIData.prestations) {
+        alert('⚠️ Impossible d\'appliquer la réponse IA');
+        return;
+    }
+    
+    // Réinitialiser les prestations
+    const tbody = document.getElementById('prestationsBody');
+    tbody.innerHTML = '';
+    prestationCount = 0;
+    
+    // Ajouter chaque prestation
+    currentAIData.prestations.forEach((prestation, index) => {
+        const row = document.createElement('tr');
+        row.id = 'prestationRow' + prestationCount;
+        row.innerHTML = `
+            <td class="border p-2"><input type="text" class="w-full p-1 border rounded prestation-designation" value="${prestation.designation}"></td>
+            <td class="border p-2"><input type="number" class="w-full p-1 border rounded text-center prestation-qte" value="${prestation.quantite}" min="0" step="0.01"></td>
+            <td class="border p-2"><input type="number" class="w-full p-1 border rounded text-right prestation-pu" value="${prestation.prix_unitaire}" min="0" step="0.01"></td>
+            <td class="border p-2 text-right prestation-total">0.00 €</td>
+            <td class="border p-2 text-center no-print"><button class="text-red-600 hover:text-red-800 remove-prestation"><i class="fas fa-trash"></i></button></td>
+        `;
+        tbody.appendChild(row);
+        prestationCount++;
+    });
+    
+    // Recalculer les totaux
+    calculateTotals();
+    
+    // Cacher la réponse IA
+    document.getElementById('aiResponse').classList.add('hidden');
+    
+    alert('✅ Devis rempli avec les suggestions de l\'IA !\nVous pouvez maintenant modifier si nécessaire.');
 }
