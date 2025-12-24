@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base de prix - Devis Artisan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- Menu Navigation -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-file-invoice mr-2"></i>
+                    Devis Artisan
+                </h1>
+                <div class="flex gap-4">
+                    <a href="/" class="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded">
+                        <i class="fas fa-plus-circle mr-1"></i> Nouveau Devis
+                    </a>
+                    <a href="/historique.html" class="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded">
+                        <i class="fas fa-history mr-1"></i> Historique
+                    </a>
+                    <a href="/base-prix.html" class="px-4 py-2 bg-blue-600 text-white rounded">
+                        <i class="fas fa-database mr-1"></i> Base de prix
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- En-tête avec statistiques -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-database mr-2"></i>
+                        Ma base de prix personnelle
+                    </h2>
+                    <p class="text-gray-600 mt-2">
+                        L'IA utilisera en priorité VOS prix pour générer les devis
+                    </p>
+                </div>
+                <button onclick="openAddPrixModal()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-plus mr-2"></i>
+                    Ajouter un prix
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-blue-50 p-4 rounded">
+                    <div class="text-sm text-blue-600 font-semibold">Total prestations</div>
+                    <div class="text-2xl font-bold text-blue-800" id="stat-total-prix">0</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded">
+                    <div class="text-sm text-green-600 font-semibold">Les plus utilisées</div>
+                    <div class="text-2xl font-bold text-green-800" id="stat-plus-utilises">0</div>
+                </div>
+                <div class="bg-purple-50 p-4 rounded">
+                    <div class="text-sm text-purple-600 font-semibold">Prix moyens</div>
+                    <div class="text-2xl font-bold text-purple-800" id="stat-prix-moyen">0 €</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres et recherche -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2">
+                    <input type="text" id="search-prix" placeholder="Rechercher une prestation..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded">
+                </div>
+                <select id="filter-categorie" class="px-4 py-2 border border-gray-300 rounded">
+                    <option value="">Toutes catégories</option>
+                    <option value="parquet">Parquet</option>
+                    <option value="peinture">Peinture</option>
+                    <option value="carrelage">Carrelage</option>
+                    <option value="plomberie">Plomberie</option>
+                    <option value="electricite">Électricité</option>
+                    <option value="maconnerie">Maçonnerie</option>
+                    <option value="autre">Autre</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Liste des prix -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Désignation</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catégorie</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prix unitaire</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unité</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Utilisé</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prix-list" class="divide-y divide-gray-200">
+                        <!-- Les prix seront chargés dynamiquement ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Message vide -->
+        <div id="empty-prix-message" class="hidden text-center py-12">
+            <i class="fas fa-database text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-600 text-lg mb-4">Votre base de prix est vide</p>
+            <p class="text-gray-500 mb-6">L'IA apprendra automatiquement de vos devis validés</p>
+            <button onclick="openAddPrixModal()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <i class="fas fa-plus mr-2"></i>
+                Ajouter un premier prix
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal ajout/modification prix -->
+    <div id="prix-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full">
+            <div class="p-6 border-b">
+                <h3 class="text-2xl font-bold text-gray-800" id="prix-modal-titre">Ajouter un prix</h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Désignation *</label>
+                        <input type="text" id="prix-designation" placeholder="Ex: Pose parquet stratifié" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Catégorie *</label>
+                            <select id="prix-categorie" class="w-full px-4 py-2 border border-gray-300 rounded">
+                                <option value="">Sélectionner...</option>
+                                <option value="parquet">Parquet</option>
+                                <option value="peinture">Peinture</option>
+                                <option value="carrelage">Carrelage</option>
+                                <option value="plomberie">Plomberie</option>
+                                <option value="electricite">Électricité</option>
+                                <option value="maconnerie">Maçonnerie</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+                            <select id="prix-type" class="w-full px-4 py-2 border border-gray-300 rounded">
+                                <option value="main_oeuvre">Main d'œuvre</option>
+                                <option value="fourniture">Fourniture</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Prix unitaire (€) *</label>
+                            <input type="number" id="prix-montant" step="0.01" placeholder="25.00" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Unité *</label>
+                            <select id="prix-unite" class="w-full px-4 py-2 border border-gray-300 rounded">
+                                <option value="m²">m²</option>
+                                <option value="ml">ml (mètre linéaire)</option>
+                                <option value="h">h (heure)</option>
+                                <option value="unité">unité</option>
+                                <option value="forfait">forfait</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Notes (optionnel)</label>
+                        <textarea id="prix-notes" rows="2" placeholder="Ex: Prix pour parquet milieu de gamme" 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t flex gap-3 justify-end">
+                <button onclick="closePrixModal()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                    Annuler
+                </button>
+                <button onclick="savePrix()" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    <i class="fas fa-save mr-2"></i>Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/base-prix.js"></script>
+</body>
+</html>

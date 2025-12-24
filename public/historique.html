@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique des devis - Devis Artisan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- Menu Navigation -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-file-invoice mr-2"></i>
+                    Devis Artisan
+                </h1>
+                <div class="flex gap-4">
+                    <a href="/" class="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded">
+                        <i class="fas fa-plus-circle mr-1"></i> Nouveau Devis
+                    </a>
+                    <a href="/historique.html" class="px-4 py-2 bg-blue-600 text-white rounded">
+                        <i class="fas fa-history mr-1"></i> Historique
+                    </a>
+                    <a href="/base-prix.html" class="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded">
+                        <i class="fas fa-database mr-1"></i> Base de prix
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Statistiques -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="text-sm text-gray-600">Total devis</div>
+                <div class="text-2xl font-bold text-gray-800" id="stat-total">0</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="text-sm text-gray-600">En attente</div>
+                <div class="text-2xl font-bold text-yellow-600" id="stat-attente">0</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="text-sm text-gray-600">Acceptés</div>
+                <div class="text-2xl font-bold text-green-600" id="stat-acceptes">0</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="text-sm text-gray-600">CA potentiel</div>
+                <div class="text-2xl font-bold text-blue-600" id="stat-ca">0 €</div>
+            </div>
+        </div>
+
+        <!-- Filtres et recherche -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-2">
+                    <input type="text" id="search-input" placeholder="Rechercher un client, numéro..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded">
+                </div>
+                <select id="filter-statut" class="px-4 py-2 border border-gray-300 rounded">
+                    <option value="">Tous les statuts</option>
+                    <option value="brouillon">Brouillon</option>
+                    <option value="envoye">Envoyé</option>
+                    <option value="accepte">Accepté</option>
+                    <option value="refuse">Refusé</option>
+                </select>
+                <select id="filter-tri" class="px-4 py-2 border border-gray-300 rounded">
+                    <option value="date-desc">Plus récent</option>
+                    <option value="date-asc">Plus ancien</option>
+                    <option value="montant-desc">Montant ↓</option>
+                    <option value="montant-asc">Montant ↑</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Liste des devis -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b">
+                <h2 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-list mr-2"></i>
+                    Liste des devis
+                </h2>
+            </div>
+            <div id="devis-list" class="divide-y">
+                <!-- Les devis seront chargés dynamiquement ici -->
+            </div>
+        </div>
+
+        <!-- Message vide -->
+        <div id="empty-message" class="hidden text-center py-12">
+            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-600 text-lg mb-4">Aucun devis enregistré</p>
+            <a href="/" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <i class="fas fa-plus mr-2"></i>
+                Créer mon premier devis
+            </a>
+        </div>
+    </div>
+
+    <!-- Modal de détail devis -->
+    <div id="detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-2xl font-bold text-gray-800" id="detail-titre">Détail du devis</h3>
+                <button onclick="closeDetailModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div id="detail-content" class="p-6">
+                <!-- Contenu du devis détaillé -->
+            </div>
+            <div class="p-6 border-t flex gap-3 justify-end">
+                <button onclick="duplicateFromModal()" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    <i class="fas fa-copy mr-2"></i>Dupliquer
+                </button>
+                <button onclick="exportPDFFromModal()" class="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                    <i class="fas fa-file-pdf mr-2"></i>Exporter PDF
+                </button>
+                <button onclick="deleteFromModal()" class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                    <i class="fas fa-trash mr-2"></i>Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/historique.js"></script>
+</body>
+</html>

@@ -359,9 +359,45 @@ app.get('/', (c) => {
             0%, 100% { opacity: 1; }
             50% { opacity: .5; }
           }
+          .page-content { display: none; }
+          .page-content:not(.hidden) { display: block; }
+          .nav-link.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+          }
         </style>
     </head>
     <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200 no-print">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex space-x-8">
+                        <button id="navNewDevis" class="nav-link active px-4 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
+                            <i class="fas fa-plus-circle mr-2"></i>
+                            Nouveau devis
+                        </button>
+                        <button id="navHistorique" class="nav-link px-4 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent">
+                            <i class="fas fa-history mr-2"></i>
+                            Historique
+                        </button>
+                        <button id="navBasePrix" class="nav-link px-4 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent">
+                            <i class="fas fa-database mr-2"></i>
+                            Ma base de prix
+                        </button>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="settingsBtn" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg transition">
+                            <i class="fas fa-cog mr-2"></i>
+                            Paramètres
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Page Nouveau Devis -->
+        <div id="pageNewDevis" class="page-content">
         <div class="min-h-screen p-4">
             <div class="flex justify-between items-center mb-6 max-w-7xl mx-auto">
                 <h1 class="text-3xl font-bold text-gray-800">
@@ -369,8 +405,16 @@ app.get('/', (c) => {
                     Devis Artisan - Saisie Vocale
                 </h1>
                 <div class="space-x-2 no-print">
-                    <button id="settingsBtn" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg transition">
-                        <i class="fas fa-cog mr-2"></i>
+                    <button id="saveDevisBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                        <i class="fas fa-save mr-2"></i>
+                        Sauvegarder
+                    </button>
+                    <button id="newDevisBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nouveau devis
+                    </button>
+                </div>
+            </div>
                         Paramètres
                     </button>
                     <button id="newDevisBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
@@ -646,6 +690,88 @@ Devis valable 30 jours</textarea>
                 </div>
             </div>
         </div>
+        </div>
+        <!-- Fin Page Nouveau Devis -->
+        
+        <!-- Page Historique -->
+        <div id="pageHistorique" class="page-content hidden">
+            <div class="min-h-screen p-4">
+                <div class="max-w-7xl mx-auto">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-history mr-2 text-blue-600"></i>
+                        Historique des devis
+                    </h1>
+                    
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <input type="text" id="searchDevis" placeholder="Rechercher un client..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <select id="filterStatut" class="px-4 py-2 border border-gray-300 rounded-lg">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="brouillon">Brouillon</option>
+                                    <option value="envoye">Envoyé</option>
+                                    <option value="accepte">Accepté</option>
+                                    <option value="refuse">Refusé</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="devisList" class="space-y-4">
+                            <!-- Liste des devis sera générée ici -->
+                        </div>
+                        
+                        <div id="noDevis" class="text-center py-12 text-gray-500 hidden">
+                            <i class="fas fa-inbox text-6xl mb-4"></i>
+                            <p class="text-xl">Aucun devis enregistré</p>
+                            <p class="text-sm mt-2">Créez votre premier devis pour le voir apparaître ici</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Fin Page Historique -->
+        
+        <!-- Page Base de Prix -->
+        <div id="pageBasePrix" class="page-content hidden">
+            <div class="min-h-screen p-4">
+                <div class="max-w-7xl mx-auto">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-database mr-2 text-blue-600"></i>
+                        Ma base de prix
+                    </h1>
+                    
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <p class="text-gray-700">
+                                <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                                Cette base se remplit automatiquement à partir de vos devis validés
+                            </p>
+                            <button id="updateBasePrixBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                                <i class="fas fa-sync-alt mr-2"></i>
+                                Actualiser depuis les devis
+                            </button>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <input type="text" id="searchPrix" placeholder="Rechercher une prestation..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div id="basePrixList" class="space-y-6">
+                            <!-- Liste des prix sera générée ici -->
+                        </div>
+                        
+                        <div id="noPrix" class="text-center py-12 text-gray-500 hidden">
+                            <i class="fas fa-database text-6xl mb-4"></i>
+                            <p class="text-xl">Aucun prix enregistré</p>
+                            <p class="text-sm mt-2">Créez et sauvegardez des devis pour alimenter votre base de prix</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Fin Page Base de Prix -->
         
         <script src="/static/app.js"></script>
     </body>
