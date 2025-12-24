@@ -5,6 +5,7 @@ let prestationCount = 1;
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
+    loadSettings();
     initSpeechRecognition();
     initDevisDate();
     setupEventListeners();
@@ -66,7 +67,16 @@ function initDevisDate() {
     const today = new Date();
     const dateStr = today.toLocaleDateString('fr-FR');
     const timeStr = today.toLocaleString('fr-FR');
-    const devisNum = 'DEV-' + today.getFullYear() + today.getMonth().toString().padStart(2, '0') + today.getDate().toString().padStart(2, '0') + '-' + Math.floor(Math.random() * 1000);
+    
+    // Récupération ou initialisation du compteur de devis
+    let devisCounter = parseInt(localStorage.getItem('devisCounter') || '0');
+    devisCounter++;
+    localStorage.setItem('devisCounter', devisCounter.toString());
+    
+    const devisNum = 'DEV-' + today.getFullYear() + 
+                     (today.getMonth() + 1).toString().padStart(2, '0') + 
+                     today.getDate().toString().padStart(2, '0') + '-' + 
+                     devisCounter.toString().padStart(4, '0');
     
     document.getElementById('devisDate').textContent = dateStr;
     document.getElementById('devisNum').textContent = devisNum;
@@ -106,6 +116,37 @@ function setupEventListeners() {
     // Bouton export PDF
     document.getElementById('exportBtn').addEventListener('click', function() {
         exportToPDF();
+    });
+    
+    // Bouton nouveau devis
+    document.getElementById('newDevisBtn').addEventListener('click', function() {
+        if (confirm('Voulez-vous créer un nouveau devis ? Le devis actuel sera effacé.')) {
+            newDevis();
+        }
+    });
+    
+    // Boutons modal paramètres
+    document.getElementById('settingsBtn').addEventListener('click', function() {
+        openSettingsModal();
+    });
+    
+    document.getElementById('closeSettingsBtn').addEventListener('click', function() {
+        closeSettingsModal();
+    });
+    
+    document.getElementById('cancelSettingsBtn').addEventListener('click', function() {
+        closeSettingsModal();
+    });
+    
+    document.getElementById('saveSettingsBtn').addEventListener('click', function() {
+        saveSettings();
+    });
+    
+    // Fermer le modal en cliquant en dehors
+    document.getElementById('settingsModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeSettingsModal();
+        }
     });
     
     // Calcul automatique des totaux
@@ -278,16 +319,27 @@ function exportToPDF() {
     doc.text('N° : ' + document.getElementById('devisNum').textContent, margin, y + 5);
     y += 15;
     
-    // Artisan
-    const artisanNom = document.getElementById('artisanNom').value || 'Nom de l\'entreprise';
-    const artisanAdresse = document.getElementById('artisanAdresse').value || 'Adresse';
-    const artisanTel = document.getElementById('artisanTel').value || 'Téléphone';
+    // Artisan - Récupération depuis les paramètres sauvegardés
+    const settings = JSON.parse(localStorage.getItem('artisanSettings') || '{}');
+    const artisanNom = settings.nom || 'Nom de l\'entreprise';
+    const artisanAdresse = settings.adresse || 'Adresse';
+    const artisanTel = settings.tel || 'Téléphone';
+    const artisanEmail = settings.email || '';
+    const artisanSiret = settings.siret || '';
     
     doc.setFont(undefined, 'bold');
     doc.text(artisanNom, pageWidth - margin, y, { align: 'right' });
     doc.setFont(undefined, 'normal');
     doc.text(artisanAdresse, pageWidth - margin, y + 5, { align: 'right' });
     doc.text(artisanTel, pageWidth - margin, y + 10, { align: 'right' });
+    if (artisanEmail) {
+        doc.text(artisanEmail, pageWidth - margin, y + 14, { align: 'right' });
+        y += 4;
+    }
+    if (artisanSiret) {
+        doc.text('SIRET: ' + artisanSiret, pageWidth - margin, y + 14, { align: 'right' });
+        y += 4;
+    }
     y += 20;
     
     // Client
@@ -387,4 +439,118 @@ function formatPrice(value) {
 
 function capitalizeWords(str) {
     return str.replace(/\b\w/g, char => char.toUpperCase());
+}
+
+// Gestion des paramètres
+function loadSettings() {
+    const settings = JSON.parse(localStorage.getItem('artisanSettings') || '{}');
+    
+    // Afficher les infos artisan sur le devis
+    document.getElementById('artisanNomDisplay').textContent = settings.nom || '';
+    document.getElementById('artisanAdresseDisplay').textContent = settings.adresse || '';
+    document.getElementById('artisanTelDisplay').textContent = settings.tel || '';
+    document.getElementById('artisanEmailDisplay').textContent = settings.email || '';
+    document.getElementById('artisanSiretDisplay').textContent = settings.siret ? 'SIRET: ' + settings.siret : '';
+    
+    // Charger les conditions par défaut
+    if (settings.conditions) {
+        document.getElementById('conditions').value = settings.conditions;
+    }
+    
+    // Charger le taux de TVA par défaut
+    if (settings.tva) {
+        document.getElementById('tauxTVA').value = settings.tva;
+    }
+    
+    // Si pas de paramètres, ouvrir le modal au premier chargement
+    if (!settings.nom) {
+        setTimeout(() => {
+            openSettingsModal();
+            alert('👋 Bienvenue ! Configurez d\'abord vos informations d\'entreprise.');
+        }, 500);
+    }
+}
+
+function openSettingsModal() {
+    const settings = JSON.parse(localStorage.getItem('artisanSettings') || '{}');
+    
+    // Remplir les champs du modal avec les valeurs existantes
+    document.getElementById('settingsNom').value = settings.nom || '';
+    document.getElementById('settingsAdresse').value = settings.adresse || '';
+    document.getElementById('settingsTel').value = settings.tel || '';
+    document.getElementById('settingsEmail').value = settings.email || '';
+    document.getElementById('settingsSiret').value = settings.siret || '';
+    document.getElementById('settingsConditions').value = settings.conditions || 'Acompte de 30% à la commande\nSolde à la livraison\nDevis valable 30 jours';
+    document.getElementById('settingsTVA').value = settings.tva || '20';
+    
+    // Afficher le modal
+    document.getElementById('settingsModal').classList.remove('hidden');
+    document.getElementById('settingsModal').classList.add('flex');
+}
+
+function closeSettingsModal() {
+    document.getElementById('settingsModal').classList.add('hidden');
+    document.getElementById('settingsModal').classList.remove('flex');
+}
+
+function saveSettings() {
+    const nom = document.getElementById('settingsNom').value.trim();
+    const adresse = document.getElementById('settingsAdresse').value.trim();
+    const tel = document.getElementById('settingsTel').value.trim();
+    
+    // Validation
+    if (!nom || !adresse || !tel) {
+        alert('⚠️ Veuillez remplir au moins le nom, l\'adresse et le téléphone de votre entreprise.');
+        return;
+    }
+    
+    // Sauvegarder les paramètres
+    const settings = {
+        nom: nom,
+        adresse: adresse,
+        tel: tel,
+        email: document.getElementById('settingsEmail').value.trim(),
+        siret: document.getElementById('settingsSiret').value.trim(),
+        conditions: document.getElementById('settingsConditions').value,
+        tva: document.getElementById('settingsTVA').value
+    };
+    
+    localStorage.setItem('artisanSettings', JSON.stringify(settings));
+    
+    // Recharger l'affichage
+    loadSettings();
+    
+    closeSettingsModal();
+    alert('✅ Paramètres enregistrés avec succès !');
+}
+
+function newDevis() {
+    // Réinitialiser le formulaire client
+    document.getElementById('clientNom').value = '';
+    document.getElementById('clientAdresse').value = '';
+    document.getElementById('clientTel').value = '';
+    
+    // Réinitialiser les prestations
+    const tbody = document.getElementById('prestationsBody');
+    tbody.innerHTML = `
+        <tr id="prestationRow0">
+            <td class="border p-2"><input type="text" class="w-full p-1 border rounded prestation-designation" placeholder="Description"></td>
+            <td class="border p-2"><input type="number" class="w-full p-1 border rounded text-center prestation-qte" value="1" min="0" step="0.01"></td>
+            <td class="border p-2"><input type="number" class="w-full p-1 border rounded text-right prestation-pu" value="0" min="0" step="0.01"></td>
+            <td class="border p-2 text-right prestation-total">0.00 €</td>
+            <td class="border p-2 text-center no-print"><button class="text-red-600 hover:text-red-800 remove-prestation"><i class="fas fa-trash"></i></button></td>
+        </tr>
+    `;
+    prestationCount = 1;
+    
+    // Réinitialiser le transcript
+    document.getElementById('transcript').value = '';
+    
+    // Générer nouveau numéro de devis
+    initDevisDate();
+    
+    // Recalculer les totaux
+    calculateTotals();
+    
+    alert('✅ Nouveau devis créé !');
 }

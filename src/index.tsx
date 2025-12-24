@@ -29,10 +29,22 @@ app.get('/', (c) => {
     </head>
     <body class="bg-gray-50">
         <div class="min-h-screen p-4">
-            <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
-                <i class="fas fa-hammer mr-2 text-blue-600"></i>
-                Devis Artisan - Saisie Vocale
-            </h1>
+            <div class="flex justify-between items-center mb-6 max-w-7xl mx-auto">
+                <h1 class="text-3xl font-bold text-gray-800">
+                    <i class="fas fa-hammer mr-2 text-blue-600"></i>
+                    Devis Artisan - Saisie Vocale
+                </h1>
+                <div class="space-x-2 no-print">
+                    <button id="settingsBtn" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg transition">
+                        <i class="fas fa-cog mr-2"></i>
+                        Paramètres
+                    </button>
+                    <button id="newDevisBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nouveau devis
+                    </button>
+                </div>
+            </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
                 <!-- Partie gauche : Saisie vocale -->
@@ -102,9 +114,11 @@ app.get('/', (c) => {
                                     <p class="font-semibold">N° : <span id="devisNum"></span></p>
                                 </div>
                                 <div class="text-right">
-                                    <input type="text" id="artisanNom" placeholder="Nom de l'entreprise" class="w-full p-2 border rounded mb-1">
-                                    <input type="text" id="artisanAdresse" placeholder="Adresse" class="w-full p-2 border rounded mb-1">
-                                    <input type="text" id="artisanTel" placeholder="Téléphone" class="w-full p-2 border rounded">
+                                    <p id="artisanNomDisplay" class="font-bold text-base"></p>
+                                    <p id="artisanAdresseDisplay" class="text-sm"></p>
+                                    <p id="artisanTelDisplay" class="text-sm"></p>
+                                    <p id="artisanEmailDisplay" class="text-sm"></p>
+                                    <p id="artisanSiretDisplay" class="text-sm"></p>
                                 </div>
                             </div>
                         </div>
@@ -181,6 +195,78 @@ Devis valable 30 jours</textarea>
                             <p>Devis généré le <span id="timestampDevis"></span></p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal Paramètres -->
+        <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-cog mr-2"></i>
+                        Paramètres de l'entreprise
+                    </h2>
+                    <button id="closeSettingsBtn" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nom de l'entreprise *</label>
+                        <input type="text" id="settingsNom" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ex: Dupont Bâtiment">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Adresse complète *</label>
+                        <input type="text" id="settingsAdresse" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ex: 15 rue de la Paix, 75001 Paris">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone *</label>
+                            <input type="tel" id="settingsTel" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="06 12 34 56 78">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="settingsEmail" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="contact@entreprise.fr">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">SIRET</label>
+                        <input type="text" id="settingsSiret" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="123 456 789 00010">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Conditions de paiement par défaut</label>
+                        <textarea id="settingsConditions" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ex: Acompte de 30% à la commande, solde à la livraison">Acompte de 30% à la commande
+Solde à la livraison
+Devis valable 30 jours</textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Taux de TVA par défaut (%)</label>
+                        <input type="number" id="settingsTVA" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="20" min="0" max="100" step="0.1">
+                    </div>
+                    
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-700">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Ces informations seront sauvegardées automatiquement et utilisées pour tous vos futurs devis.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button id="cancelSettingsBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition">
+                        Annuler
+                    </button>
+                    <button id="saveSettingsBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                        <i class="fas fa-save mr-2"></i>
+                        Enregistrer
+                    </button>
                 </div>
             </div>
         </div>
