@@ -692,10 +692,13 @@ let currentAIData = null;
 let conversationHistory = []; // Historique de la conversation
 
 async function callAIAssistant() {
+    console.log('🔍 callAIAssistant() appelée');
+    
     const text = document.getElementById('transcript').value.trim();
+    console.log('📝 Texte saisi:', text);
     
     if (!text) {
-        alert('⚠️ Dictez d\'abord ce que vous voulez faire.\n\nExemple : "Je veux faire un parquet dans une chambre de 12 mètres carrés"');
+        alert('⚠️ Dictez ou écrivez d\'abord ce que vous voulez faire.\n\nExemple : "Je veux faire un parquet dans une chambre de 12 mètres carrés"');
         return;
     }
     
@@ -703,8 +706,10 @@ async function callAIAssistant() {
     const settings = JSON.parse(localStorage.getItem('artisanSettings') || '{}');
     const apiKey = settings.openaiKey;
     
+    console.log('🔑 Clé API présente:', apiKey ? 'OUI' : 'NON');
+    
     if (!apiKey) {
-        alert('⚠️ Clé API OpenAI non configurée.\n\nAllez dans Paramètres > Assistant IA pour ajouter votre clé API.');
+        alert('⚠️ Clé API OpenAI non configurée.\n\nAllez dans Paramètres > Assistant IA (OpenAI) pour ajouter votre clé API.');
         return;
     }
     
@@ -712,8 +717,16 @@ async function callAIAssistant() {
     const personalizedPrices = getPersonalizedPricesForAI();
     const enrichedPrompt = text + personalizedPrices;
     
+    console.log('📤 Envoi requête à l\'API...');
+    
     // Afficher un loader
     const btn = document.getElementById('aiAssistBtn');
+    if (!btn) {
+        console.error('❌ Bouton aiAssistBtn introuvable !');
+        alert('❌ Erreur: Bouton IA introuvable. Rechargez la page.');
+        return;
+    }
+    
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>L\'IA réfléchit...';
     btn.disabled = true;
@@ -731,7 +744,10 @@ async function callAIAssistant() {
             })
         });
         
+        console.log('📥 Réponse reçue, status:', response.status);
+        
         const data = await response.json();
+        console.log('📦 Données:', data);
         
         if (!response.ok) {
             throw new Error(data.error || 'Erreur inconnue');
@@ -749,6 +765,8 @@ async function callAIAssistant() {
             content: data.response
         });
         
+        console.log('✅ Historique mis à jour, affichage de la réponse...');
+        
         // Effacer le champ de saisie pour la prochaine réponse
         document.getElementById('transcript').value = '';
         
@@ -756,11 +774,25 @@ async function callAIAssistant() {
         displayAIResponse(data.response);
         
     } catch (error) {
-        console.error('Erreur:', error);
-        alert('❌ Erreur: ' + error.message);
+        console.error('❌ Erreur complète:', error);
+        
+        let errorMsg = '❌ Erreur lors de l\'appel à l\'IA:\n\n';
+        
+        if (error.message.includes('Failed to fetch')) {
+            errorMsg += '🌐 Problème de connexion réseau.\n\nVérifiez:\n- Votre connexion internet\n- Que le serveur est accessible';
+        } else if (error.message.includes('API')) {
+            errorMsg += '🔑 Problème avec votre clé API OpenAI.\n\nVérifiez:\n- Que votre clé est valide\n- Que vous avez des crédits OpenAI\n- Que la clé n\'est pas expirée';
+        } else {
+            errorMsg += error.message;
+        }
+        
+        errorMsg += '\n\n💡 Consultez la console (F12) pour plus de détails.';
+        
+        alert(errorMsg);
     } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
+        console.log('🔄 Bouton réinitialisé');
     }
 }
 
