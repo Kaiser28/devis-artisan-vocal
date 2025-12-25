@@ -591,6 +591,24 @@ app.get('/', (c) => {
                             <input type="text" id="clientTel" placeholder="Téléphone" class="w-full p-2 border rounded">
                         </div>
                         
+                        <!-- Informations travaux -->
+                        <div class="mb-4 p-3 bg-blue-50 rounded border border-blue-200 no-print">
+                            <h4 class="font-bold text-blue-800 mb-2 text-sm">
+                                <i class="fas fa-calendar-alt mr-2"></i>
+                                Informations sur les travaux
+                            </h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Date de début</label>
+                                    <input type="date" id="dateDebut" class="w-full p-2 border border-gray-300 rounded text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Durée estimée</label>
+                                    <input type="text" id="dureeEstimee" class="w-full p-2 border border-gray-300 rounded text-sm" placeholder="Ex: 2 semaines">
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Prestations -->
                         <div class="mb-6">
                             <h4 class="font-bold text-gray-700 mb-2">PRESTATIONS :</h4>
@@ -697,6 +715,38 @@ Devis valable 30 jours</textarea>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">SIRET</label>
                         <input type="text" id="settingsSiret" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="123 456 789 00010">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">N° Répertoire des Métiers (RM)</label>
+                            <input type="text" id="settingsRM" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="RM 123456789">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">N° TVA intracommunautaire</label>
+                            <input type="text" id="settingsTVAIntra" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="FR 12 345678901">
+                        </div>
+                    </div>
+                    
+                    <div class="border-t-2 border-gray-200 pt-4 mt-2">
+                        <h3 class="text-md font-bold text-gray-800 mb-3">
+                            <i class="fas fa-shield-alt mr-2 text-green-600"></i>
+                            Assurance décennale (obligatoire)
+                        </h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nom de l'assureur *</label>
+                                <input type="text" id="settingsAssuranceNom" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="Ex: AXA, Allianz, MAAF...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">N° de police *</label>
+                                <input type="text" id="settingsAssurancePolice" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="Ex: POL123456789">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Zone géographique couverte</label>
+                                <input type="text" id="settingsAssuranceZone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" value="France métropolitaine">
+                            </div>
+                        </div>
                     </div>
                     
                     <div>

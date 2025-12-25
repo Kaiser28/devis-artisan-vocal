@@ -538,6 +538,11 @@ function openSettingsModal() {
     document.getElementById('settingsTel').value = settings.tel || '';
     document.getElementById('settingsEmail').value = settings.email || '';
     document.getElementById('settingsSiret').value = settings.siret || '';
+    document.getElementById('settingsRM').value = settings.rm || '';
+    document.getElementById('settingsTVAIntra').value = settings.tvaIntra || '';
+    document.getElementById('settingsAssuranceNom').value = settings.assuranceNom || '';
+    document.getElementById('settingsAssurancePolice').value = settings.assurancePolice || '';
+    document.getElementById('settingsAssuranceZone').value = settings.assuranceZone || 'France métropolitaine';
     document.getElementById('settingsConditions').value = settings.conditions || 'Acompte de 30% à la commande\nSolde à la livraison\nDevis valable 30 jours';
     document.getElementById('settingsTVA').value = settings.tva || '20';
     document.getElementById('settingsOpenAIKey').value = settings.openaiKey || '';
@@ -584,6 +589,11 @@ function saveSettings() {
         tel: tel,
         email: document.getElementById('settingsEmail').value.trim(),
         siret: document.getElementById('settingsSiret').value.trim(),
+        rm: document.getElementById('settingsRM').value.trim(),
+        tvaIntra: document.getElementById('settingsTVAIntra').value.trim(),
+        assuranceNom: document.getElementById('settingsAssuranceNom').value.trim(),
+        assurancePolice: document.getElementById('settingsAssurancePolice').value.trim(),
+        assuranceZone: document.getElementById('settingsAssuranceZone').value.trim(),
         conditions: document.getElementById('settingsConditions').value,
         tva: document.getElementById('settingsTVA').value,
         openaiKey: document.getElementById('settingsOpenAIKey').value.trim(),
@@ -1186,7 +1196,11 @@ function collectDevisData() {
     const totalTTC = parseFloat(document.getElementById('totalTTC')?.textContent) || 0;
     
     // Conditions de paiement
-    const conditionsPaiement = document.getElementById('conditionsPaiement')?.value.trim();
+    const conditionsPaiement = document.getElementById('conditions')?.value.trim();
+    
+    // Informations travaux
+    const dateDebut = document.getElementById('dateDebut')?.value || null;
+    const dureeEstimee = document.getElementById('dureeEstimee')?.value.trim() || null;
     
     return {
         id: Date.now().toString(),
@@ -1200,7 +1214,14 @@ function collectDevisData() {
         artisan_tel: settings.tel || '',
         artisan_email: settings.email || '',
         artisan_siret: settings.siret || '',
-        artisan_logo: settings.logo || null,  // Logo en base64
+        artisan_rm: settings.rm || '',
+        artisan_tva_intra: settings.tvaIntra || '',
+        artisan_assurance_nom: settings.assuranceNom || '',
+        artisan_assurance_police: settings.assurancePolice || '',
+        artisan_assurance_zone: settings.assuranceZone || '',
+        artisan_logo: settings.logo || null,
+        date_debut: dateDebut,
+        duree_estimee: dureeEstimee,
         lots,
         total_ht: totalHT,
         tva_taux: tvaTaux,
@@ -1600,6 +1621,119 @@ function exportToPDF() {
                 yPosition += 5;
             });
         }
+        
+        // ========================================
+        // MENTIONS LÉGALES OBLIGATOIRES
+        // ========================================
+        yPosition += 10;
+        
+        if (yPosition > pageHeight - 80) {
+            doc.addPage();
+            yPosition = margin;
+        }
+        
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text('MENTIONS LÉGALES', margin, yPosition);
+        yPosition += 6;
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        
+        // Infos légales entreprise
+        if (devis.artisan_rm) {
+            doc.text('RM : ' + cleanText(devis.artisan_rm), margin, yPosition);
+            yPosition += 4;
+        }
+        if (devis.artisan_tva_intra) {
+            doc.text('N° TVA intracommunautaire : ' + cleanText(devis.artisan_tva_intra), margin, yPosition);
+            yPosition += 4;
+        }
+        
+        // Assurance décennale (OBLIGATOIRE)
+        if (devis.artisan_assurance_nom && devis.artisan_assurance_police) {
+            yPosition += 2;
+            doc.setFont('helvetica', 'bold');
+            doc.text('Assurance décennale :', margin, yPosition);
+            yPosition += 4;
+            doc.setFont('helvetica', 'normal');
+            doc.text('Assureur : ' + cleanText(devis.artisan_assurance_nom) + ' - Police n° ' + cleanText(devis.artisan_assurance_police), margin, yPosition);
+            yPosition += 4;
+            if (devis.artisan_assurance_zone) {
+                doc.text('Zone couverte : ' + cleanText(devis.artisan_assurance_zone), margin, yPosition);
+                yPosition += 4;
+            }
+        }
+        
+        // Informations travaux
+        if (devis.date_debut || devis.duree_estimee) {
+            yPosition += 2;
+            doc.setFont('helvetica', 'bold');
+            doc.text('Travaux :', margin, yPosition);
+            yPosition += 4;
+            doc.setFont('helvetica', 'normal');
+            if (devis.date_debut) {
+                doc.text('Date de début : ' + new Date(devis.date_debut).toLocaleDateString('fr-FR'), margin, yPosition);
+                yPosition += 4;
+            }
+            if (devis.duree_estimee) {
+                doc.text('Durée estimée : ' + cleanText(devis.duree_estimee), margin, yPosition);
+                yPosition += 4;
+            }
+        }
+        
+        // Garanties légales
+        yPosition += 2;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Garanties :', margin, yPosition);
+        yPosition += 4;
+        doc.setFont('helvetica', 'normal');
+        doc.text('- Garantie décennale : 10 ans (vices et dommages compromettant la solidité)', margin, yPosition);
+        yPosition += 4;
+        doc.text('- Garantie biennale : 2 ans (bon fonctionnement des équipements)', margin, yPosition);
+        yPosition += 4;
+        doc.text('- Garantie de parfait achèvement : 1 an (désordres signalés à la réception)', margin, yPosition);
+        yPosition += 6;
+        
+        // Délai de rétractation
+        doc.setFont('helvetica', 'bold');
+        doc.text('Délai de rétractation : 14 jours (travaux < 5 000€ HT ou démarchage)', margin, yPosition);
+        yPosition += 8;
+        
+        // Signatures
+        if (yPosition > pageHeight - 40) {
+            doc.addPage();
+            yPosition = margin;
+        }
+        
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SIGNATURES', margin, yPosition);
+        yPosition += 8;
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        
+        const sigCol1 = margin;
+        const sigCol2 = pageWidth / 2 + 10;
+        
+        doc.text('L\'entreprise', sigCol1, yPosition);
+        doc.text('Le client', sigCol2, yPosition);
+        yPosition += 4;
+        
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'italic');
+        const mentionClient = doc.splitTextToSize('"Devis reçu avant l\'exécution des travaux, bon pour accord"', 80);
+        mentionClient.forEach(line => {
+            doc.text(line, sigCol2, yPosition);
+            yPosition += 3;
+        });
+        
+        yPosition = Math.max(yPosition, pageHeight - 60);
+        doc.text('Date : ___________', sigCol2, yPosition);
+        yPosition += 8;
+        doc.text('Signature :', sigCol2, yPosition);
         
         // ========================================
         // PIED DE PAGE (sur toutes les pages)
