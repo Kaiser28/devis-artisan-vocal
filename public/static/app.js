@@ -1332,7 +1332,7 @@ function exportToPDF() {
         
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
-        const margin = 15;
+        const margin = 10;  // Réduire les marges de 15 à 10mm
         const contentWidth = pageWidth - (margin * 2);
         
         let yPosition = margin;
@@ -1353,51 +1353,60 @@ function exportToPDF() {
             }
         }
         
+        // EN-TÊTE ENTREPRISE (COMPACT)
         // ========================================
-        // EN-TÊTE ENTREPRISE
-        // ========================================
-        doc.setFontSize(16);
+        doc.setFontSize(12);  // Réduit de 16 à 12
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(31, 78, 121); // Bleu foncé
+        doc.setTextColor(31, 78, 121);
         doc.text(cleanText(devis.artisan_nom) || 'Entreprise', margin, yPosition);
         
-        yPosition += 7;
-        doc.setFontSize(9);
+        yPosition += 4;  // Réduit de 7 à 4
+        doc.setFontSize(7);  // Réduit de 9 à 7
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(60, 60, 60);
         
+        // Infos entreprise sur 2 lignes max
         if (devis.artisan_adresse) {
             doc.text(cleanText(devis.artisan_adresse), margin, yPosition);
-            yPosition += 5;
+            yPosition += 3;  // Réduit de 5 à 3
         }
         
         const contactLine = [];
         if (devis.artisan_tel) contactLine.push('Tel: ' + cleanText(devis.artisan_tel));
-        if (devis.artisan_email) contactLine.push('Email: ' + cleanText(devis.artisan_email));
+        if (devis.artisan_email) contactLine.push(cleanText(devis.artisan_email));
         if (contactLine.length > 0) {
-            doc.text(contactLine.join(' - '), margin, yPosition);
-            yPosition += 5;
+            doc.text(contactLine.join(' | '), margin, yPosition);
+            yPosition += 3;
         }
         
-        if (devis.artisan_siret) {
-            doc.text('SIRET: ' + cleanText(devis.artisan_siret), margin, yPosition);
-            yPosition += 5;
+        // Infos légales condensées sur 1 ligne
+        const legalLine = [];
+        if (devis.artisan_siret) legalLine.push('SIRET: ' + cleanText(devis.artisan_siret));
+        if (devis.artisan_rm) legalLine.push('RM: ' + cleanText(devis.artisan_rm));
+        if (devis.artisan_tva_intra) legalLine.push('TVA: ' + cleanText(devis.artisan_tva_intra));
+        if (legalLine.length > 0) {
+            doc.text(legalLine.join(' | '), margin, yPosition);
+            yPosition += 3;
+        }
+        
+        // Assurance sur 1 ligne
+        if (devis.artisan_assurance_nom && devis.artisan_assurance_police) {
+            doc.text('Assurance: ' + cleanText(devis.artisan_assurance_nom) + ' - ' + cleanText(devis.artisan_assurance_police), margin, yPosition);
+            yPosition += 3;
         }
         
         // Ligne de séparation
-        yPosition += 3;
+        yPosition += 2;  // Réduit de 3 à 2
         doc.setDrawColor(200, 200, 200);
         doc.line(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 10;
+        yPosition += 5;  // Réduit de 10 à 5
         
-        // ========================================
-        // TITRE DEVIS
-        // ========================================
-        doc.setFontSize(20);
+        // TITRE DEVIS (COMPACT)
+        doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(31, 78, 121);
         doc.text('DEVIS', pageWidth / 2, yPosition, { align: 'center' });
-        yPosition += 10;
+        yPosition += 6;
         
         // ========================================
         // INFO DEVIS ET CLIENT (2 COLONNES)
@@ -1592,148 +1601,60 @@ function exportToPDF() {
         doc.text(devis.total_ttc.toFixed(2) + ' EUR', totalX, yPosition, { align: 'right' });
         yPosition += 10;
         
-        // ========================================
-        // CONDITIONS DE PAIEMENT
+        // CONDITIONS DE PAIEMENT (COMPACT)
         // ========================================
         if (devis.conditions_paiement) {
             doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(10);
-            yPosition += 5;
+            doc.setFontSize(8);  // Réduit de 10 à 8
+            yPosition += 3;  // Réduit de 5 à 3
             
-            if (yPosition > pageHeight - 30) {
-                doc.addPage();
-                yPosition = margin;
-            }
-            
-            doc.text('Conditions de paiement:', margin, yPosition);
-            yPosition += 6;
+            doc.text('Conditions:', margin, yPosition);
+            yPosition += 4;  // Réduit de 6 à 4
             
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
+            doc.setFontSize(7);  // Réduit de 9 à 7
             const conditionsLines = doc.splitTextToSize(cleanText(devis.conditions_paiement), contentWidth);
-            conditionsLines.forEach(line => {
-                if (yPosition > pageHeight - 20) {
-                    doc.addPage();
-                    yPosition = margin;
+            conditionsLines.forEach((line, index) => {
+                if (index < 3) {  // Limiter à 3 lignes max
+                    doc.text(line, margin, yPosition);
+                    yPosition += 3;  // Réduit de 5 à 3
                 }
-                doc.text(line, margin, yPosition);
-                yPosition += 5;
             });
         }
         
+        // MENTIONS LÉGALES CONDENSÉES (AU PIED)
         // ========================================
-        // MENTIONS LÉGALES OBLIGATOIRES
-        // ========================================
-        yPosition += 10;
-        
-        if (yPosition > pageHeight - 80) {
-            doc.addPage();
-            yPosition = margin;
-        }
-        
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(0, 0, 0);
-        doc.text('MENTIONS LÉGALES', margin, yPosition);
-        yPosition += 6;
-        
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        
-        // Infos légales entreprise
-        if (devis.artisan_rm) {
-            doc.text('RM : ' + cleanText(devis.artisan_rm), margin, yPosition);
-            yPosition += 4;
-        }
-        if (devis.artisan_tva_intra) {
-            doc.text('N° TVA intracommunautaire : ' + cleanText(devis.artisan_tva_intra), margin, yPosition);
-            yPosition += 4;
-        }
-        
-        // Assurance décennale (OBLIGATOIRE)
-        if (devis.artisan_assurance_nom && devis.artisan_assurance_police) {
-            yPosition += 2;
-            doc.setFont('helvetica', 'bold');
-            doc.text('Assurance décennale :', margin, yPosition);
-            yPosition += 4;
-            doc.setFont('helvetica', 'normal');
-            doc.text('Assureur : ' + cleanText(devis.artisan_assurance_nom) + ' - Police n° ' + cleanText(devis.artisan_assurance_police), margin, yPosition);
-            yPosition += 4;
-            if (devis.artisan_assurance_zone) {
-                doc.text('Zone couverte : ' + cleanText(devis.artisan_assurance_zone), margin, yPosition);
-                yPosition += 4;
-            }
-        }
-        
-        // Informations travaux
-        if (devis.date_debut || devis.duree_estimee) {
-            yPosition += 2;
-            doc.setFont('helvetica', 'bold');
-            doc.text('Travaux :', margin, yPosition);
-            yPosition += 4;
-            doc.setFont('helvetica', 'normal');
-            if (devis.date_debut) {
-                doc.text('Date de début : ' + new Date(devis.date_debut).toLocaleDateString('fr-FR'), margin, yPosition);
-                yPosition += 4;
-            }
-            if (devis.duree_estimee) {
-                doc.text('Durée estimée : ' + cleanText(devis.duree_estimee), margin, yPosition);
-                yPosition += 4;
-            }
-        }
-        
-        // Garanties légales
-        yPosition += 2;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Garanties :', margin, yPosition);
         yPosition += 4;
+        
+        doc.setFontSize(6);  // Très petit pour tout faire tenir
         doc.setFont('helvetica', 'normal');
-        doc.text('- Garantie décennale : 10 ans (vices et dommages compromettant la solidité)', margin, yPosition);
-        yPosition += 4;
-        doc.text('- Garantie biennale : 2 ans (bon fonctionnement des équipements)', margin, yPosition);
-        yPosition += 4;
-        doc.text('- Garantie de parfait achèvement : 1 an (désordres signalés à la réception)', margin, yPosition);
-        yPosition += 6;
+        doc.setTextColor(60, 60, 60);
         
-        // Délai de rétractation
-        doc.setFont('helvetica', 'bold');
-        doc.text('Délai de rétractation : 14 jours (travaux < 5 000€ HT ou démarchage)', margin, yPosition);
-        yPosition += 8;
+        // Ligne 1: Garanties
+        doc.text('Garanties: Décennale 10 ans | Biennale 2 ans | Parfait achèvement 1 an | Délai rétractation 14 jours', margin, yPosition);
+        yPosition += 3;
         
-        // Signatures
-        if (yPosition > pageHeight - 40) {
-            doc.addPage();
-            yPosition = margin;
+        // Ligne 2: Travaux
+        const workInfo = [];
+        if (devis.date_debut) workInfo.push('Début: ' + new Date(devis.date_debut).toLocaleDateString('fr-FR'));
+        if (devis.duree_estimee) workInfo.push('Durée: ' + cleanText(devis.duree_estimee));
+        if (workInfo.length > 0) {
+            doc.text(workInfo.join(' | '), margin, yPosition);
+            yPosition += 3;
         }
         
-        doc.setFontSize(9);
+        // Ligne 3: Signatures (très compact)
+        doc.setFontSize(7);
         doc.setFont('helvetica', 'bold');
-        doc.text('SIGNATURES', margin, yPosition);
-        yPosition += 8;
-        
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        
         const sigCol1 = margin;
         const sigCol2 = pageWidth / 2 + 10;
-        
         doc.text('L\'entreprise', sigCol1, yPosition);
-        doc.text('Le client', sigCol2, yPosition);
-        yPosition += 4;
-        
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'italic');
-        const mentionClient = doc.splitTextToSize('"Devis reçu avant l\'exécution des travaux, bon pour accord"', 80);
-        mentionClient.forEach(line => {
-            doc.text(line, sigCol2, yPosition);
-            yPosition += 3;
-        });
-        
-        yPosition = Math.max(yPosition, pageHeight - 60);
-        doc.text('Date : ___________', sigCol2, yPosition);
-        yPosition += 8;
-        doc.text('Signature :', sigCol2, yPosition);
+        doc.text('Le client (Bon pour accord)', sigCol2, yPosition);
+        yPosition += 3;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6);
+        doc.text('Date: ________ Signature:', sigCol2, yPosition);
         
         // ========================================
         // PIED DE PAGE (sur toutes les pages)
@@ -2090,6 +2011,13 @@ function getPersonalizedPricesForAI() {
         prixText += `📁 ${categorie.toUpperCase()} :\n`;
         grouped[categorie].forEach(prix => {
             prixText += `  • ${prix.designation} : ${prix.prix_unitaire.toFixed(2)} €/${prix.unite} (${prix.type}) [Utilisé ${prix.usage_count || 0}x]\n`;
+        });
+        prixText += '\n';
+    });
+    
+    return prixText;
+}
+rix.type}) [Utilisé ${prix.usage_count || 0}x]\n`;
         });
         prixText += '\n';
     });
