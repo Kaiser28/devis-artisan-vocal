@@ -385,6 +385,18 @@ app.get('/', (c) => {
             color: #2563eb;
             border-bottom-color: #2563eb;
           }
+          
+          /* Styles onglets */
+          .tab-button.active {
+            border-bottom-color: #2563eb !important;
+            color: #2563eb !important;
+          }
+          .tab-content {
+            display: none;
+          }
+          .tab-content.active {
+            display: block;
+          }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -437,71 +449,105 @@ app.get('/', (c) => {
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
-                <!-- Partie gauche : Saisie vocale -->
-                <div class="bg-white rounded-lg shadow-lg p-6 no-print">
-                    <h2 class="text-xl font-bold text-gray-700 mb-4">
-                        <i class="fas fa-microphone mr-2"></i>
-                        Saisie Vocale
-                    </h2>
-                    
-                    <div class="mb-4">
-                        <button id="startBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition">
-                            <i class="fas fa-microphone mr-2"></i>
-                            Commencer la dictée
+                <!-- Partie gauche : Interface à onglets -->
+                <div class="bg-white rounded-lg shadow-lg no-print">
+                    <!-- Onglets -->
+                    <div class="flex border-b border-gray-200">
+                        <button id="tabSaisie" class="tab-button active flex-1 py-4 px-6 text-sm font-medium border-b-2 border-blue-600 text-blue-600 hover:bg-gray-50 transition">
+                            <i class="fas fa-pen mr-2"></i>
+                            Saisie
                         </button>
-                        <button id="stopBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition hidden">
-                            <i class="fas fa-stop mr-2"></i>
-                            Arrêter la dictée
-                        </button>
-                    </div>
-                    
-                    <div id="status" class="text-sm text-gray-600 mb-4 p-3 bg-gray-100 rounded"></div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Texte dicté :</label>
-                        <textarea id="transcript" rows="8" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Le texte dicté apparaîtra ici..."></textarea>
-                    </div>
-                    
-                    <div class="space-y-3">
-                        <button id="clearBtn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition">
-                            <i class="fas fa-trash mr-2"></i>
-                            Effacer
-                        </button>
-                        <button id="aiAssistBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                        <button id="tabIA" class="tab-button flex-1 py-4 px-6 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition">
                             <i class="fas fa-robot mr-2"></i>
-                            Assistant IA - Construire le devis
+                            Assistant IA
                         </button>
-                        <button id="analyzeBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
-                            <i class="fas fa-magic mr-2"></i>
-                            Analyser et remplir le devis
-                        </button>
-                    </div>
-                    
-                    <div id="aiResponse" class="mt-4 p-4 bg-purple-50 rounded-lg hidden">
-                        <h4 class="font-bold text-purple-800 mb-2">
-                            <i class="fas fa-robot mr-2"></i>
-                            Réponse de l'assistant IA :
-                        </h4>
-                        <div id="aiResponseText" class="text-sm text-gray-700 whitespace-pre-wrap"></div>
-                        <button id="applyAiBtn" class="mt-3 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition">
-                            <i class="fas fa-check mr-2"></i>
-                            Appliquer au devis
+                        <button id="tabInfo" class="tab-button flex-1 py-4 px-6 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Aide
                         </button>
                     </div>
                     
-                    <div class="mt-4 p-4 bg-blue-50 rounded-lg">
-                        <p class="text-sm text-gray-700"><strong>💡 Mode Assistant IA :</strong></p>
-                        <p class="text-xs text-gray-600 mt-2 italic">
-                            Dictez simplement ce que vous voulez faire. L'IA vous guidera et construira le devis pour vous !
-                        </p>
-                        <p class="text-xs text-gray-600 mt-1 italic">
-                            Exemple : "Je veux faire un parquet dans une chambre de 12 mètres carrés"
-                        </p>
-                        <hr class="my-2 border-blue-200">
-                        <p class="text-sm text-gray-700 mt-2"><strong>💡 Mode Analyse classique :</strong></p>
-                        <p class="text-xs text-gray-600 mt-1 italic">
-                            "Client Jean Dupont, 15 rue de la Paix Paris. Prestation peinture chambre 12 mètres carrés à 25 euros le mètre carré."
-                        </p>
+                    <div class="p-6">
+                        <!-- Contenu Onglet Saisie -->
+                        <div id="contentSaisie" class="tab-content">
+                            <div class="mb-4">
+                                <div class="flex gap-2 mb-3">
+                                    <button id="startBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition">
+                                        <i class="fas fa-microphone mr-2"></i>
+                                        Vocal
+                                    </button>
+                                    <button id="stopBtn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition hidden">
+                                        <i class="fas fa-stop mr-2"></i>
+                                        Stop
+                                    </button>
+                                </div>
+                                <div id="status" class="text-xs text-gray-600 mb-3 p-2 bg-gray-100 rounded text-center"></div>
+                            </div>
+                            
+                            <textarea id="transcript" rows="12" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="Tapez ou dictez votre demande ici..."></textarea>
+                            
+                            <div class="mt-4 flex gap-2">
+                                <button id="clearBtn" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition text-sm">
+                                    <i class="fas fa-trash mr-2"></i>
+                                    Effacer
+                                </button>
+                                <button id="aiAssistBtn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition text-sm">
+                                    <i class="fas fa-robot mr-2"></i>
+                                    🤖 IA
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Contenu Onglet Assistant IA -->
+                        <div id="contentIA" class="tab-content hidden">
+                            <div id="aiResponse" class="p-4 bg-purple-50 rounded-lg">
+                                <h4 class="font-bold text-purple-800 mb-3 text-sm">
+                                    <i class="fas fa-robot mr-2"></i>
+                                    Assistant IA
+                                </h4>
+                                <div id="aiResponseText" class="text-sm text-gray-700 whitespace-pre-wrap min-h-[300px]">
+                                    <p class="text-gray-500 italic">Cliquez sur "🤖 IA" dans l'onglet Saisie pour commencer...</p>
+                                </div>
+                                <button id="applyAIBtn" class="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition text-sm hidden">
+                                    <i class="fas fa-check mr-2"></i>
+                                    ✓ Appliquer au devis
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Contenu Onglet Aide -->
+                        <div id="contentInfo" class="tab-content hidden">
+                            <div class="space-y-4 text-sm">
+                                <div class="p-3 bg-purple-50 rounded-lg">
+                                    <p class="font-bold text-purple-800 mb-2">🤖 Mode Assistant IA</p>
+                                    <p class="text-xs text-gray-600 italic">
+                                        Dictez simplement ce que vous voulez faire. L'IA vous pose des questions et construit le devis.
+                                    </p>
+                                    <p class="text-xs text-gray-600 mt-2 italic">
+                                        <strong>Exemple :</strong> "Je veux faire un parquet de 25m²"
+                                    </p>
+                                </div>
+                                
+                                <div class="p-3 bg-blue-50 rounded-lg">
+                                    <p class="font-bold text-blue-800 mb-2">📝 Saisie complète</p>
+                                    <p class="text-xs text-gray-600 italic">
+                                        Dictez toutes les informations d'un coup avec client, prestations et prix.
+                                    </p>
+                                    <p class="text-xs text-gray-600 mt-2 italic">
+                                        <strong>Exemple :</strong> "Client Jean Dupont à Paris. Prestation peinture 12m² à 25€/m²."
+                                    </p>
+                                </div>
+                                
+                                <div class="p-3 bg-gray-100 rounded-lg">
+                                    <p class="font-bold text-gray-800 mb-2">💡 Astuces</p>
+                                    <ul class="text-xs text-gray-600 space-y-1 list-disc list-inside">
+                                        <li>Utilisez le mode vocal pour gagner du temps</li>
+                                        <li>L'IA apprend de vos prix au fil du temps</li>
+                                        <li>Tous vos devis sont sauvegardés dans l'historique</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -785,6 +831,7 @@ Devis valable 30 jours</textarea>
         </div>
         <!-- Fin Page Base de Prix -->
         
+        <script src="/static/tabs.js"></script>
         <script src="/static/app.js"></script>
     </body>
     </html>

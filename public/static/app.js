@@ -676,6 +676,11 @@ async function answerAIQuestion(answer) {
 }
 
 function displayAIResponse(response) {
+    // Passer automatiquement à l'onglet IA
+    if (window.showAITab) {
+        window.showAITab();
+    }
+    
     try {
         // Essayer de parser le JSON
         const jsonMatch = response.match(/\{[\s\S]*\}/);
