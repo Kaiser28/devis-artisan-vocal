@@ -700,6 +700,28 @@ Devis valable 30 jours</textarea>
                     </div>
                     
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-image mr-2"></i>
+                            Logo de l'entreprise
+                        </label>
+                        <div class="flex items-start gap-4">
+                            <div class="flex-1">
+                                <input type="file" id="settingsLogo" accept="image/png,image/jpeg,image/jpg" class="w-full p-2 border border-gray-300 rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Format JPG, PNG • Max 500 KB • Recommandé: 300x100 px
+                                </p>
+                            </div>
+                            <div id="logoPreview" class="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hidden">
+                                <img id="logoPreviewImg" src="" alt="Logo" class="max-w-full max-h-full object-contain">
+                            </div>
+                        </div>
+                        <button id="removeLogo" class="mt-2 text-red-600 hover:text-red-800 text-sm hidden">
+                            <i class="fas fa-trash mr-1"></i>
+                            Supprimer le logo
+                        </button>
+                    </div>
+                    
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Conditions de paiement par défaut</label>
                         <textarea id="settingsConditions" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Ex: Acompte de 30% à la commande, solde à la livraison">Acompte de 30% à la commande
 Solde à la livraison

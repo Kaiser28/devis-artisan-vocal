@@ -260,6 +260,70 @@ function setupEventListeners() {
         saveSettings();
     });
     
+    // Upload de logo
+    const logoInput = document.getElementById('settingsLogo');
+    if (logoInput) {
+        logoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Vérifier le type de fichier
+            if (!file.type.match('image/(jpeg|jpg|png)')) {
+                alert('⚠️ Format non supporté. Utilisez JPG ou PNG.');
+                return;
+            }
+            
+            // Vérifier la taille (500 KB max)
+            if (file.size > 500 * 1024) {
+                alert('⚠️ Le fichier est trop volumineux. Max 500 KB.');
+                return;
+            }
+            
+            // Lire et convertir en base64
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const logoBase64 = event.target.result;
+                
+                // Sauvegarder dans les paramètres
+                const settings = JSON.parse(localStorage.getItem('artisanSettings') || '{}');
+                settings.logo = logoBase64;
+                localStorage.setItem('artisanSettings', JSON.stringify(settings));
+                
+                // Afficher le preview
+                const logoPreview = document.getElementById('logoPreview');
+                const logoPreviewImg = document.getElementById('logoPreviewImg');
+                const removeLogoBtn = document.getElementById('removeLogo');
+                
+                logoPreviewImg.src = logoBase64;
+                logoPreview.classList.remove('hidden');
+                removeLogoBtn.classList.remove('hidden');
+                
+                alert('✅ Logo ajouté avec succès !');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    // Supprimer le logo
+    const removeLogoBtn = document.getElementById('removeLogo');
+    if (removeLogoBtn) {
+        removeLogoBtn.addEventListener('click', function() {
+            if (!confirm('Voulez-vous vraiment supprimer le logo ?')) return;
+            
+            // Supprimer des paramètres
+            const settings = JSON.parse(localStorage.getItem('artisanSettings') || '{}');
+            delete settings.logo;
+            localStorage.setItem('artisanSettings', JSON.stringify(settings));
+            
+            // Masquer le preview
+            document.getElementById('logoPreview').classList.add('hidden');
+            document.getElementById('removeLogo').classList.add('hidden');
+            document.getElementById('settingsLogo').value = '';
+            
+            alert('✅ Logo supprimé.');
+        });
+    }
+    
     // Fermer le modal en cliquant en dehors
     document.getElementById('settingsModal').addEventListener('click', function(e) {
         if (e.target === this) {
@@ -478,6 +542,17 @@ function openSettingsModal() {
     document.getElementById('settingsTVA').value = settings.tva || '20';
     document.getElementById('settingsOpenAIKey').value = settings.openaiKey || '';
     
+    // Charger le logo s'il existe
+    if (settings.logo) {
+        const logoPreview = document.getElementById('logoPreview');
+        const logoPreviewImg = document.getElementById('logoPreviewImg');
+        const removeLogoBtn = document.getElementById('removeLogo');
+        
+        logoPreviewImg.src = settings.logo;
+        logoPreview.classList.remove('hidden');
+        removeLogoBtn.classList.remove('hidden');
+    }
+    
     // Afficher le modal
     document.getElementById('settingsModal').classList.remove('hidden');
     document.getElementById('settingsModal').classList.add('flex');
@@ -499,6 +574,9 @@ function saveSettings() {
         return;
     }
     
+    // Récupérer les paramètres existants pour conserver le logo
+    const existingSettings = JSON.parse(localStorage.getItem('artisanSettings') || '{}');
+    
     // Sauvegarder les paramètres
     const settings = {
         nom: nom,
@@ -508,7 +586,8 @@ function saveSettings() {
         siret: document.getElementById('settingsSiret').value.trim(),
         conditions: document.getElementById('settingsConditions').value,
         tva: document.getElementById('settingsTVA').value,
-        openaiKey: document.getElementById('settingsOpenAIKey').value.trim()
+        openaiKey: document.getElementById('settingsOpenAIKey').value.trim(),
+        logo: existingSettings.logo || null  // Conserver le logo existant
     };
     
     localStorage.setItem('artisanSettings', JSON.stringify(settings));
@@ -1037,7 +1116,7 @@ function saveCurrentDevis(statut = 'brouillon') {
 // Collecter toutes les données du devis actuel
 function collectDevisData() {
     // Informations artisan
-    const settings = JSON.parse(localStorage.getItem('artisan_settings') || '{}');
+    const settings = JSON.parse(localStorage.getItem('artisanSettings') || '{}');
     
     // Informations client
     const clientNom = document.getElementById('clientNom')?.value.trim();
@@ -1116,11 +1195,12 @@ function collectDevisData() {
         client_nom: clientNom,
         client_adresse: clientAdresse,
         client_tel: clientTel,
-        artisan_nom: settings.artisanName || '',
-        artisan_adresse: settings.artisanAddress || '',
-        artisan_tel: settings.artisanPhone || '',
-        artisan_email: settings.artisanEmail || '',
-        artisan_siret: settings.artisanSiret || '',
+        artisan_nom: settings.nom || '',
+        artisan_adresse: settings.adresse || '',
+        artisan_tel: settings.tel || '',
+        artisan_email: settings.email || '',
+        artisan_siret: settings.siret || '',
+        artisan_logo: settings.logo || null,  // Logo en base64
         lots,
         total_ht: totalHT,
         tva_taux: tvaTaux,
@@ -1235,6 +1315,22 @@ function exportToPDF() {
         const contentWidth = pageWidth - (margin * 2);
         
         let yPosition = margin;
+        
+        // ========================================
+        // LOGO ENTREPRISE (en haut à droite)
+        // ========================================
+        if (devis.artisan_logo) {
+            try {
+                const logoWidth = 40;  // Largeur du logo en mm
+                const logoHeight = 20; // Hauteur du logo en mm
+                const logoX = pageWidth - margin - logoWidth;
+                const logoY = margin;
+                
+                doc.addImage(devis.artisan_logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
+            } catch (error) {
+                console.warn('Impossible d\'ajouter le logo:', error);
+            }
+        }
         
         // ========================================
         // EN-TÊTE ENTREPRISE
