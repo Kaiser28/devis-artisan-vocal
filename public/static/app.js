@@ -545,10 +545,7 @@ function newDevis() {
     // Réinitialiser le transcript
     document.getElementById('transcript').value = '';
     
-    // Cacher la réponse IA si visible
-    document.getElementById('aiResponse').classList.add('hidden');
-    
-    // Réinitialiser l'historique de conversation
+    // Réinitialiser l'historique de conversation (visibilité gérée par onglets)
     conversationHistory = [];
     currentAIData = null;
     
@@ -822,10 +819,10 @@ function displayAIResponse(response) {
                 }
                 
                 document.getElementById('aiResponseText').textContent = displayText;
-                document.getElementById('aiResponse').classList.remove('hidden');
                 
                 // Afficher le bouton "Appliquer" en mode devis
-                document.getElementById('applyAiBtn').classList.remove('hidden');
+                const applyBtn = document.getElementById('applyAiBtn');
+                if (applyBtn) applyBtn.classList.remove('hidden');
                 
                 return;
             }
@@ -861,7 +858,6 @@ function displayAIResponse(response) {
                 }
                 
                 document.getElementById('aiResponseText').textContent = displayText;
-                document.getElementById('aiResponse').classList.remove('hidden');
                 document.getElementById('applyAiBtn').classList.remove('hidden');
                 
                 return;
@@ -886,7 +882,6 @@ function displayAIResponse(response) {
                 }
                 
                 document.getElementById('aiResponseText').textContent = displayText;
-                document.getElementById('aiResponse').classList.remove('hidden');
                 document.getElementById('applyAiBtn').classList.remove('hidden');
                 
                 return;
@@ -896,14 +891,13 @@ function displayAIResponse(response) {
             // Réponse non JSON
             currentAIData = null;
             document.getElementById('aiResponseText').textContent = response;
-            document.getElementById('aiResponse').classList.remove('hidden');
-            document.getElementById('applyAiBtn').classList.add('hidden');
+            const applyBtn = document.getElementById('applyAiBtn');
+            if (applyBtn) applyBtn.classList.add('hidden');
         }
     } catch (error) {
         console.error('Erreur parsing:', error);
         currentAIData = null;
         document.getElementById('aiResponseText').textContent = response;
-        document.getElementById('aiResponse').classList.remove('hidden');
         document.getElementById('applyAiBtn').classList.add('hidden');
     }
 }
@@ -958,7 +952,6 @@ function applyAIResponse() {
         calculateTotals();
         
         // Cacher la réponse IA
-        document.getElementById('aiResponse').classList.add('hidden');
         
         alert('✅ Devis rempli avec les suggestions de l\'IA par lots !\nVous pouvez maintenant modifier si nécessaire.');
         return;
@@ -994,7 +987,6 @@ function applyAIResponse() {
     calculateTotals();
     
     // Cacher la réponse IA
-    document.getElementById('aiResponse').classList.add('hidden');
     
     alert('✅ Devis rempli avec les suggestions de l\'IA !\nVous pouvez maintenant modifier si nécessaire.');
 }
