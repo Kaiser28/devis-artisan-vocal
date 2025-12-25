@@ -337,6 +337,9 @@ export class InteractiveTutorial {
     showStep(index) {
         if (index < 0 || index >= this.steps.length) return;
         
+        // Restaurer l'ancien élément ciblé AVANT de passer à la nouvelle étape
+        this.hideHighlight();
+        
         this.currentStep = index;
         const step = this.steps[index];
         
