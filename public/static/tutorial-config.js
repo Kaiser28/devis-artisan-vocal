@@ -64,8 +64,7 @@ const tutorialSteps = [
     {
         title: "💬 Étape 4 : Répondre aux questions",
         description: "L'IA vous pose des questions avec des boutons interactifs. Cliquez sur les réponses pour que l'IA comprenne mieux votre besoin. Vous pouvez aussi cliquer sur 'Générer le devis maintenant' si vous avez assez d'informations.",
-        target: "#aiResponse",
-        position: "left",
+        position: "center",  // Centré sans cibler d'élément spécifique
         validate: () => {
             const applyBtn = document.getElementById('applyAIBtn');
             return applyBtn && !applyBtn.classList.contains('hidden');
