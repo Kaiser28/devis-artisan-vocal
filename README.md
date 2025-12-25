@@ -173,8 +173,8 @@ Application web complète pour les artisans du BTP permettant de créer des devi
 
 **Version 2.3 (Devis conforme légalement)** - *⚖️ Version recommandée pour professionnels*
 - **Fichier** : `devis-artisan-v2.3-legal.tar.gz`
-- **URL** : https://www.genspark.ai/api/files/s/GJ63Xvao
-- **Taille** : 677 KB
+- **URL** : https://www.genspark.ai/api/files/s/PiqaKQ1M
+- **Taille** : 667 KB
 - **Nouveautés** : 
   - ⚖️ **Devis 100% conformes** aux obligations légales
   - 🛡️ **Assurance décennale** (assureur, police, zone)
