@@ -3,6 +3,15 @@ let recognition;
 let isRecording = false;
 let prestationCount = 1;
 
+// Helper pour manipuler aiResponse sans erreur
+function safeHideAIResponse() {
+    // Rien à faire, géré par les onglets
+}
+
+function safeShowAIResponse() {
+    // Rien à faire, géré par showAITab() dans displayAIResponse
+}
+
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
     loadSettings();
@@ -766,10 +775,11 @@ function displayAIResponse(response) {
                 htmlContent += '</div>';
                 
                 document.getElementById('aiResponseText').innerHTML = htmlContent;
-                document.getElementById('aiResponse').classList.remove('hidden');
+                // Plus besoin de classList, l'onglet IA est géré par showAITab()
                 
                 // Cacher le bouton "Appliquer" en mode questions
-                document.getElementById('applyAiBtn').classList.add('hidden');
+                const applyBtn = document.getElementById('applyAIBtn');
+                if (applyBtn) applyBtn.classList.add('hidden');
                 
                 return;
             }
