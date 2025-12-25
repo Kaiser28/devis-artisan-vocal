@@ -216,10 +216,7 @@ function setupEventListeners() {
         applyAIResponse();
     });
     
-    // Bouton analyser
-    document.getElementById('analyzeBtn').addEventListener('click', function() {
-        analyzeTranscript();
-    });
+    // Note: analyzeBtn supprimé avec la refonte interface onglets
     
     // Bouton ajouter prestation
     document.getElementById('addPrestationBtn').addEventListener('click', function() {
