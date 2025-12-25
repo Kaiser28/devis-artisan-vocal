@@ -171,23 +171,27 @@ Application web complète pour les artisans du BTP permettant de créer des devi
 
 ### Backups disponibles
 
-**Version 2.1 (Interface Onglets)** - *Recommandée*
+**Version 2.2 (Logo Entreprise)** - *Dernière version recommandée*
+- **Fichier** : `devis-artisan-v2.2-logo.tar.gz`
+- **URL** : https://www.genspark.ai/api/files/s/ehpzPiQu
+- **Taille** : 624 KB
+- **Nouveautés** : 
+  - ✨ **Upload de logo entreprise** (JPG/PNG, max 500 KB)
+  - 🖼️ **Preview et suppression du logo**
+  - 📄 **Logo affiché dans le PDF** (haut à droite, 40x20mm)
+  - 💾 **Stockage base64 dans localStorage**
+  - ✅ Interface onglets stable
+- **Date** : 25 décembre 2024
+
+**Version 2.1 (Interface Onglets)**
 - **Fichier** : `devis-artisan-stable-v2.1.tar.gz`
 - **URL** : https://www.genspark.ai/api/files/s/mVy5sbZn
 - **Taille** : 564 KB
-- **Nouveautés** : 
-  - ✅ Interface à onglets (Saisie / Assistant IA / Aide)
-  - ✅ Toutes erreurs console corrigées
-  - ✅ Bouton "Appliquer au devis" fonctionnel
-  - ✅ Code ultra-propre et optimisé
-- **Date** : 24 décembre 2024
 
 **Version 2.0 (Stable Originale)**
 - **Fichier** : `devis-artisan-vocal-v1-stable.tar.gz`
 - **URL** : https://www.genspark.ai/api/files/s/tu8JiqI5
 - **Taille** : 400 KB
-- **Description** : Version stable complète avec toutes fonctionnalités opérationnelles
-- **Date** : 24 décembre 2024
 
 ### Contenu du backup
 ✅ Code source complet (HTML, CSS, JavaScript)  
