@@ -171,17 +171,25 @@ Application web complète pour les artisans du BTP permettant de créer des devi
 
 ### Backups disponibles
 
-**Version 2.2 (Logo Entreprise)** - *Dernière version recommandée*
-- **Fichier** : `devis-artisan-v2.2-logo.tar.gz`
+**Version 2.3 (Devis conforme légalement)** - *⚖️ Version recommandée pour professionnels*
+- **Fichier** : `devis-artisan-v2.3-legal.tar.gz`
+- **URL** : https://www.genspark.ai/api/files/s/GJ63Xvao
+- **Taille** : 677 KB
+- **Nouveautés** : 
+  - ⚖️ **Devis 100% conformes** aux obligations légales
+  - 🛡️ **Assurance décennale** (assureur, police, zone)
+  - 📋 **N° RM** + **N° TVA intracommunautaire**
+  - 📅 **Date de début** et **durée estimée** des travaux
+  - ✅ **Garanties légales** (décennale 10 ans, biennale 2 ans, parfait achèvement 1 an)
+  - ⏱️ **Délai de rétractation** 14 jours
+  - ✍️ **Espace signatures** avec mention légale obligatoire
+  - 🖼️ Logo entreprise dans PDF
+  - ✅ Respect Code de la consommation + Code civil
+- **Date** : 25 décembre 2024
+
+**Version 2.2 (Logo Entreprise)**
 - **URL** : https://www.genspark.ai/api/files/s/ehpzPiQu
 - **Taille** : 624 KB
-- **Nouveautés** : 
-  - ✨ **Upload de logo entreprise** (JPG/PNG, max 500 KB)
-  - 🖼️ **Preview et suppression du logo**
-  - 📄 **Logo affiché dans le PDF** (haut à droite, 40x20mm)
-  - 💾 **Stockage base64 dans localStorage**
-  - ✅ Interface onglets stable
-- **Date** : 25 décembre 2024
 
 **Version 2.1 (Interface Onglets)**
 - **Fichier** : `devis-artisan-stable-v2.1.tar.gz`
