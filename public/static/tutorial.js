@@ -370,6 +370,9 @@ export class InteractiveTutorial {
         if (step.target) {
             const element = document.querySelector(step.target);
             if (element) {
+                // Activer le backdrop pour cibler un élément
+                this.overlay.querySelector('.tutorial-backdrop').style.display = 'block';
+                
                 element.scrollIntoView({ 
                     behavior: 'smooth', 
                     block: 'center',
@@ -386,6 +389,8 @@ export class InteractiveTutorial {
                 this.positionTooltip(step);
             }
         } else {
+            // Pas de target : désactiver complètement le backdrop
+            this.overlay.querySelector('.tutorial-backdrop').style.display = 'none';
             this.hideHighlight();
             this.positionTooltip(step);
         }
