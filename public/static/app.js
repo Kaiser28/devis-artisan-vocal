@@ -212,7 +212,7 @@ function setupEventListeners() {
     });
     
     // Bouton appliquer réponse IA
-    document.getElementById('applyAiBtn').addEventListener('click', function() {
+    document.getElementById('applyAIBtn').addEventListener('click', function() {
         applyAIResponse();
     });
     
@@ -821,8 +821,13 @@ function displayAIResponse(response) {
                 document.getElementById('aiResponseText').textContent = displayText;
                 
                 // Afficher le bouton "Appliquer" en mode devis
-                const applyBtn = document.getElementById('applyAiBtn');
-                if (applyBtn) applyBtn.classList.remove('hidden');
+                const applyBtn = document.getElementById('applyAIBtn');
+                if (applyBtn) {
+                    console.log('✅ Affichage du bouton Appliquer en mode devis');
+                    applyBtn.classList.remove('hidden');
+                } else {
+                    console.error('❌ Bouton applyAIBtn introuvable !');
+                }
                 
                 return;
             }
@@ -858,7 +863,7 @@ function displayAIResponse(response) {
                 }
                 
                 document.getElementById('aiResponseText').textContent = displayText;
-                document.getElementById('applyAiBtn').classList.remove('hidden');
+                document.getElementById('applyAIBtn').classList.remove('hidden');
                 
                 return;
             }
@@ -882,7 +887,7 @@ function displayAIResponse(response) {
                 }
                 
                 document.getElementById('aiResponseText').textContent = displayText;
-                document.getElementById('applyAiBtn').classList.remove('hidden');
+                document.getElementById('applyAIBtn').classList.remove('hidden');
                 
                 return;
             }
@@ -891,14 +896,14 @@ function displayAIResponse(response) {
             // Réponse non JSON
             currentAIData = null;
             document.getElementById('aiResponseText').textContent = response;
-            const applyBtn = document.getElementById('applyAiBtn');
+            const applyBtn = document.getElementById('applyAIBtn');
             if (applyBtn) applyBtn.classList.add('hidden');
         }
     } catch (error) {
         console.error('Erreur parsing:', error);
         currentAIData = null;
         document.getElementById('aiResponseText').textContent = response;
-        document.getElementById('applyAiBtn').classList.add('hidden');
+        document.getElementById('applyAIBtn').classList.add('hidden');
     }
 }
 
