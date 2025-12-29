@@ -34,7 +34,16 @@ function initSpeechRecognition() {
     const statusEl = document.getElementById('status');
     const startBtn = document.getElementById('startBtn');
     
+    // Vérifier que les éléments existent
+    if (!statusEl || !startBtn) {
+        console.error('❌ Éléments vocaux introuvables:', { statusEl, startBtn });
+        return;
+    }
+    
+    console.log('✅ Initialisation reconnaissance vocale...');
+    
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        console.error('❌ API Speech Recognition non disponible');
         statusEl.innerHTML = `
             <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
                 <p class="text-red-800 font-bold mb-2">❌ Reconnaissance vocale non disponible</p>
@@ -51,11 +60,23 @@ function initSpeechRecognition() {
         return;
     }
     
+    console.log('✅ API Speech Recognition disponible');
+    
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.lang = 'fr-FR';
     recognition.continuous = true;
     recognition.interimResults = true;
+    
+    console.log('✅ Recognition configurée:', recognition);
+    
+    // Afficher un message de succès
+    statusEl.innerHTML = `
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+            <p class="text-blue-800 font-bold">✅ Reconnaissance vocale prête !</p>
+            <p class="text-blue-700 text-sm">Cliquez sur "Commencer la dictée" pour démarrer</p>
+        </div>
+    `;
     
     recognition.onstart = function() {
         isRecording = true;
