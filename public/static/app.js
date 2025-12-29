@@ -2038,10 +2038,3 @@ function getPersonalizedPricesForAI() {
     
     return prixText;
 }
-rix.type}) [Utilisé ${prix.usage_count || 0}x]\n`;
-        });
-        prixText += '\n';
-    });
-    
-    return prixText;
-}
