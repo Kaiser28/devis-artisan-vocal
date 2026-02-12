@@ -1,55 +1,23 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  // Protection /app
-  if (request.nextUrl.pathname.startsWith('/app') && !session) {
-    const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/login'
-    return NextResponse.redirect(redirectUrl)
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  
+  // Si c'est /devis/vocal, laisser passer (route statique prioritaire)
+  if (pathname === '/devis/vocal') {
+    return NextResponse.next()
   }
-
-  // Redirect /login si déjà connecté
-  if (request.nextUrl.pathname.startsWith('/login') && session) {
-    const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/app'
-    return NextResponse.redirect(redirectUrl)
+  
+  // Si c'est /devis/nouveau, laisser passer
+  if (pathname === '/devis/nouveau') {
+    return NextResponse.next()
   }
-
-  return supabaseResponse
+  
+  // Sinon, continuer normalement
+  return NextResponse.next()
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/devis/:path*']
 }
