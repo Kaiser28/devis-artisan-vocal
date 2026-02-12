@@ -1,0 +1,266 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+
+interface Message {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: Date
+}
+
+export default function ChatPage() {
+  const router = useRouter()
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  
+  // Thread info
+  const [conversationId, setConversationId] = useState<string | null>(null)
+  const [threadId, setThreadId] = useState<string | null>(null)
+  const [assistantId, setAssistantId] = useState<string | null>(null)
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll vers le bas
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  // Initialiser le thread au chargement
+  useEffect(() => {
+    initThread()
+  }, [])
+
+  async function initThread() {
+    try {
+      const res = await fetch('/api/assistant/thread')
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push('/login')
+          return
+        }
+        throw new Error('Erreur récupération thread')
+      }
+
+      const data = await res.json()
+      setConversationId(data.conversation_id)
+      setThreadId(data.thread_id)
+      setAssistantId(data.assistant_id)
+
+      console.log('✅ Thread initialisé :', data)
+
+      // Message de bienvenue si nouveau thread
+      if (data.is_new) {
+        setMessages([{
+          id: 'welcome',
+          role: 'assistant',
+          content: `👋 Bonjour ! Je suis votre assistant IA pour la création de devis BTP.
+
+**Que puis-je faire pour vous ?**
+
+📋 **Créer un devis** : "Devis pour Dupont, 50 m² peinture, 20 m² carrelage, remise 10%"
+🔍 **Rechercher un client** : "Cherche les clients à Versailles"
+💶 **Consulter les prix** : "Prix de la peinture"
+📊 **Voir un devis** : "Affiche le devis DEV-2026-003"
+
+**Astuce** : Vous pouvez aussi utiliser le micro 🎤 pour dicter vos demandes !`,
+          timestamp: new Date()
+        }])
+      }
+    } catch (err) {
+      console.error('Erreur init thread :', err)
+      setError('Erreur d\'initialisation. Veuillez rafraîchir la page.')
+    }
+  }
+
+  async function sendMessage(e: React.FormEvent) {
+    e.preventDefault()
+    
+    if (!input.trim() || loading || !threadId || !assistantId) return
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input.trim(),
+      timestamp: new Date()
+    }
+
+    setMessages(prev => [...prev, userMessage])
+    setInput('')
+    setLoading(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage.content,
+          conversation_id: conversationId,
+          thread_id: threadId,
+          assistant_id: assistantId
+        })
+      })
+
+      if (!res.ok) {
+        throw new Error('Erreur envoi message')
+      }
+
+      const data = await res.json()
+
+      const assistantMessage: Message = {
+        id: data.message_id || Date.now().toString(),
+        role: 'assistant',
+        content: data.message,
+        timestamp: new Date()
+      }
+
+      setMessages(prev => [...prev, assistantMessage])
+
+    } catch (err) {
+      console.error('Erreur envoi :', err)
+      setError('Erreur lors de l\'envoi. Veuillez réessayer.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Nouvelle conversation
+  async function newConversation() {
+    try {
+      const res = await fetch('/api/assistant/thread', { method: 'POST' })
+      if (!res.ok) throw new Error('Erreur création thread')
+
+      const data = await res.json()
+      setConversationId(data.conversation_id)
+      setThreadId(data.thread_id)
+      setAssistantId(data.assistant_id)
+      setMessages([{
+        id: 'welcome',
+        role: 'assistant',
+        content: '👋 Nouvelle conversation démarrée ! Comment puis-je vous aider ?',
+        timestamp: new Date()
+      }])
+      setError('')
+    } catch (err) {
+      console.error('Erreur nouvelle conversation :', err)
+      setError('Erreur création nouvelle conversation')
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.push('/app')}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            ← Retour
+          </button>
+          <h1 className="text-2xl font-bold text-gray-800">
+            🤖 Assistant IA Devis
+          </h1>
+        </div>
+        <button
+          onClick={newConversation}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+        >
+          ➕ Nouvelle conversation
+        </button>
+      </header>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`max-w-3xl rounded-lg px-6 py-4 ${
+                msg.role === 'user'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white text-gray-800 border border-gray-200 shadow-sm'
+              }`}
+            >
+              <div className="whitespace-pre-wrap">{msg.content}</div>
+              <div className={`text-xs mt-2 ${
+                msg.role === 'user' ? 'text-indigo-200' : 'text-gray-400'
+              }`}>
+                {msg.timestamp.toLocaleTimeString('fr-FR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {loading && (
+          <div className="flex justify-start">
+            <div className="max-w-3xl bg-white border border-gray-200 rounded-lg px-6 py-4 shadow-sm">
+              <div className="flex items-center gap-2 text-gray-600">
+                <div className="animate-spin h-4 w-4 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
+                <span>L'assistant réfléchit...</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex justify-center">
+            <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg px-6 py-4">
+              ⚠️ {error}
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input */}
+      <div className="bg-white border-t border-gray-200 px-6 py-4">
+        <form onSubmit={sendMessage} className="max-w-4xl mx-auto">
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Tapez votre message... (ex: 'Devis pour Dupont, 50 m² peinture')"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+              disabled={loading || !threadId}
+            />
+            <button
+              type="button"
+              className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition disabled:opacity-50"
+              disabled={loading || !threadId}
+              title="Reconnaissance vocale (à venir)"
+            >
+              🎤
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+              disabled={loading || !input.trim() || !threadId}
+            >
+              {loading ? 'Envoi...' : 'Envoyer'}
+            </button>
+          </div>
+        </form>
+
+        <p className="text-center text-sm text-gray-500 mt-3">
+          💡 Exemples : "Devis Dupont 50 m² peinture" • "Cherche clients à Versailles" • "Prix carrelage"
+        </p>
+      </div>
+    </div>
+  )
+}
