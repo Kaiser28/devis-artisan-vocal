@@ -266,13 +266,112 @@ async function executeFunctionCall(
       }
 
       case 'create_devis': {
-        // Utiliser la fonction déjà implémentée
-        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', 'http://localhost:3000')}/api/functions/create-devis`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(args)
+        const { 
+          client_id, 
+          lots, 
+          remise_pourcentage = 0, 
+          acompte_pourcentage = 0,
+          conditions_paiement,
+          statut = 'brouillon'
+        } = args
+
+        // Vérifier que le client existe
+        const { data: client, error: clientError } = await supabase
+          .from('clients')
+          .select('*')
+          .eq('id', client_id)
+          .eq('user_id', userId)
+          .single()
+
+        if (clientError || !client) {
+          throw new Error('Client non trouvé')
+        }
+
+        // Récupérer les paramètres artisan
+        const { data: settings } = await supabase
+          .from('user_settings')
+          .select('*')
+          .eq('user_id', userId)
+          .single()
+
+        // Calculs
+        let total_ht = 0
+        const lotsWithTotals = lots.map((lot: any) => {
+          const total_ht_ligne = lot.quantite * lot.prix_unitaire_ht
+          total_ht += total_ht_ligne
+          return { ...lot, total_ht: parseFloat(total_ht_ligne.toFixed(2)) }
         })
-        return await response.json()
+
+        const remise_montant = parseFloat(((total_ht * remise_pourcentage) / 100).toFixed(2))
+        const total_ht_apres_remise = parseFloat((total_ht - remise_montant).toFixed(2))
+        const tva_taux = lots[0]?.tva_taux || 20
+        const tva_montant = parseFloat((total_ht_apres_remise * tva_taux / 100).toFixed(2))
+        const total_ttc = parseFloat((total_ht_apres_remise + tva_montant).toFixed(2))
+        const acompte_montant = parseFloat((total_ttc * acompte_pourcentage / 100).toFixed(2))
+
+        // Générer le numéro de devis
+        const year = new Date().getFullYear()
+        const { count: devisCount } = await supabase
+          .from('devis')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .like('numero', `DEV-${year}-%`)
+
+        const nextNumber = (devisCount || 0) + 1
+        const numero = `DEV-${year}-${String(nextNumber).padStart(3, '0')}`
+
+        // Créer le devis
+        const { data: devis, error: insertError } = await supabase
+          .from('devis')
+          .insert({
+            user_id: userId,
+            numero,
+            date_creation: new Date().toISOString().split('T')[0],
+            client_id: client.id,
+            client_nom: client.nom,
+            client_prenom: client.prenom,
+            client_email: client.email,
+            client_telephone: client.telephone,
+            client_adresse: client.adresse,
+            client_code_postal: client.code_postal,
+            client_ville: client.ville,
+            artisan_raison_sociale: settings?.artisan_raison_sociale || '',
+            artisan_siret: settings?.artisan_siret || '',
+            artisan_adresse: settings?.artisan_adresse || '',
+            artisan_code_postal: settings?.artisan_code_postal || '',
+            artisan_ville: settings?.artisan_ville || '',
+            artisan_telephone: settings?.artisan_telephone || '',
+            artisan_email: settings?.artisan_email || '',
+            assurance_compagnie: settings?.assurance_compagnie || '',
+            assurance_numero_police: settings?.assurance_numero_police || '',
+            lots: lotsWithTotals,
+            total_ht: parseFloat(total_ht.toFixed(2)),
+            tva_montant,
+            total_ttc,
+            remise_pourcentage,
+            remise_montant,
+            acompte_pourcentage,
+            acompte_montant,
+            conditions_paiement: conditions_paiement || settings?.conditions_paiement_defaut || 'Paiement à réception',
+            statut
+          })
+          .select()
+          .single()
+
+        if (insertError) throw insertError
+
+        return {
+          success: true,
+          devis: {
+            id: devis.id,
+            numero: devis.numero,
+            client_nom: `${client.prenom} ${client.nom}`,
+            total_ht: devis.total_ht,
+            total_ttc: devis.total_ttc,
+            acompte_montant: devis.acompte_montant,
+            statut: devis.statut
+          }
+        }
       }
 
       case 'get_devis': {
