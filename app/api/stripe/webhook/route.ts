@@ -92,19 +92,27 @@ export async function POST(req: Request) {
           .eq('user_id', userId)
           .single()
 
+        // Helper pour convertir timestamp Unix en ISO string de manière sécurisée
+        const toISOStringOrNull = (timestamp: number | null | undefined): string | null => {
+          if (!timestamp || typeof timestamp !== 'number' || timestamp <= 0) return null
+          try {
+            return new Date(timestamp * 1000).toISOString()
+          } catch {
+            return null
+          }
+        }
+
         const subscriptionData = {
           user_id: userId,
           plan_id: plan.id,
           stripe_customer_id: session.customer as string,
           stripe_subscription_id: subscription.id,
           status: subscription.status,
-          trial_ends_at: subscription.trial_end 
-            ? new Date(subscription.trial_end * 1000).toISOString()
-            : null,
+          trial_ends_at: toISOStringOrNull(subscription.trial_end as number),
           // @ts-ignore - Stripe type incomplet
-          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+          current_period_start: toISOStringOrNull(subscription.current_period_start),
           // @ts-ignore - Stripe type incomplet
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
+          current_period_end: toISOStringOrNull(subscription.current_period_end)
         }
 
         if (existingSub) {
@@ -128,20 +136,26 @@ export async function POST(req: Request) {
         const subscription = event.data.object as Stripe.Subscription
         const customerId = subscription.customer as string
 
+        // Helper pour convertir timestamp Unix en ISO string de manière sécurisée
+        const toISOStringOrNull = (timestamp: number | null | undefined): string | null => {
+          if (!timestamp || typeof timestamp !== 'number' || timestamp <= 0) return null
+          try {
+            return new Date(timestamp * 1000).toISOString()
+          } catch {
+            return null
+          }
+        }
+
         await supabase
           .from('user_subscriptions')
           .update({
             status: subscription.status,
-            trial_ends_at: subscription.trial_end 
-              ? new Date(subscription.trial_end * 1000).toISOString()
-              : null,
+            trial_ends_at: toISOStringOrNull(subscription.trial_end as number),
             // @ts-ignore - Stripe type incomplet
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+            current_period_start: toISOStringOrNull(subscription.current_period_start),
             // @ts-ignore - Stripe type incomplet
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            canceled_at: subscription.canceled_at 
-              ? new Date(subscription.canceled_at * 1000).toISOString()
-              : null
+            current_period_end: toISOStringOrNull(subscription.current_period_end),
+            canceled_at: toISOStringOrNull(subscription.canceled_at as number)
           })
           .eq('stripe_customer_id', customerId)
 
