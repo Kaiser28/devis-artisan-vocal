@@ -59,13 +59,21 @@ export default function AutocompleteClient({ onSelect, selectedClient }: Autocom
     setLoading(true)
     try {
       const response = await fetch('/api/clients?limit=50')
-      if (!response.ok) throw new Error('Erreur de chargement')
+      if (!response.ok) {
+        console.error('Error loading clients:', response.status, response.statusText)
+        throw new Error('Erreur de chargement')
+      }
       
-      const { data } = await response.json()
-      setResults(data)
+      const result = await response.json()
+      console.log('Clients loaded:', result)
+      
+      // Vérifier la structure de la réponse
+      const clientsData = result.data || result
+      setResults(Array.isArray(clientsData) ? clientsData : [])
       setIsOpen(true)
     } catch (error) {
-      console.error(error)
+      console.error('Error in loadAllClients:', error)
+      setResults([])
     } finally {
       setLoading(false)
     }
@@ -75,13 +83,21 @@ export default function AutocompleteClient({ onSelect, selectedClient }: Autocom
     setLoading(true)
     try {
       const response = await fetch(`/api/clients/search?q=${encodeURIComponent(search)}`)
-      if (!response.ok) throw new Error('Erreur de recherche')
+      if (!response.ok) {
+        console.error('Error searching clients:', response.status, response.statusText)
+        throw new Error('Erreur de recherche')
+      }
       
-      const { data } = await response.json()
-      setResults(data)
+      const result = await response.json()
+      console.log('Search result:', result)
+      
+      // Vérifier la structure de la réponse
+      const clientsData = result.data || result
+      setResults(Array.isArray(clientsData) ? clientsData : [])
       setIsOpen(true)
     } catch (error) {
-      console.error(error)
+      console.error('Error in searchClients:', error)
+      setResults([])
     } finally {
       setLoading(false)
     }
