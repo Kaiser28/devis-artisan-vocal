@@ -94,11 +94,8 @@ export default function DevisDetailPage() {
       const settingsResponse = await fetch('/api/settings')
       const settingsData = settingsResponse.ok ? await settingsResponse.json() : null
       
-      // Générer le PDF
-      const doc = await generateDevisPDF(devis as any, settingsData?.data)
-      
-      // Télécharger
-      doc.save(`Devis_${devis?.numero}.pdf`)
+      // Générer et télécharger le PDF (le save est fait dans la fonction)
+      await generateDevisPDF(devis as any, settingsData?.data)
     } catch (err: any) {
       alert('Erreur lors de la génération du PDF')
       console.error(err)
