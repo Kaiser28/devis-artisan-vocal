@@ -23,6 +23,7 @@ export default function AutocompleteClient({ onSelect, selectedClient }: Autocom
   const [results, setResults] = useState<Client[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -57,22 +58,33 @@ export default function AutocompleteClient({ onSelect, selectedClient }: Autocom
 
   const loadAllClients = async () => {
     setLoading(true)
+    setError(null)
     try {
       const response = await fetch('/api/clients?limit=50')
       if (!response.ok) {
-        console.error('Error loading clients:', response.status, response.statusText)
-        throw new Error('Erreur de chargement')
+        const errorText = await response.text()
+        console.error('Error loading clients:', response.status, errorText)
+        throw new Error(`Erreur ${response.status}: ${errorText}`)
       }
       
       const result = await response.json()
       console.log('Clients loaded:', result)
       
       // Vérifier la structure de la réponse
-      const clientsData = result.data || result
-      setResults(Array.isArray(clientsData) ? clientsData : [])
-      setIsOpen(true)
-    } catch (error) {
+      if (result && result.data && Array.isArray(result.data)) {
+        setResults(result.data)
+        setIsOpen(true)
+      } else if (Array.isArray(result)) {
+        setResults(result)
+        setIsOpen(true)
+      } else {
+        console.error('Invalid response structure:', result)
+        setError('Format de réponse invalide')
+        setResults([])
+      }
+    } catch (error: any) {
       console.error('Error in loadAllClients:', error)
+      setError(error.message || 'Erreur de chargement')
       setResults([])
     } finally {
       setLoading(false)
@@ -81,22 +93,33 @@ export default function AutocompleteClient({ onSelect, selectedClient }: Autocom
 
   const searchClients = async () => {
     setLoading(true)
+    setError(null)
     try {
       const response = await fetch(`/api/clients/search?q=${encodeURIComponent(search)}`)
       if (!response.ok) {
-        console.error('Error searching clients:', response.status, response.statusText)
-        throw new Error('Erreur de recherche')
+        const errorText = await response.text()
+        console.error('Error searching clients:', response.status, errorText)
+        throw new Error(`Erreur ${response.status}: ${errorText}`)
       }
       
       const result = await response.json()
       console.log('Search result:', result)
       
       // Vérifier la structure de la réponse
-      const clientsData = result.data || result
-      setResults(Array.isArray(clientsData) ? clientsData : [])
-      setIsOpen(true)
-    } catch (error) {
+      if (result && result.data && Array.isArray(result.data)) {
+        setResults(result.data)
+        setIsOpen(true)
+      } else if (Array.isArray(result)) {
+        setResults(result)
+        setIsOpen(true)
+      } else {
+        console.error('Invalid response structure:', result)
+        setError('Format de réponse invalide')
+        setResults([])
+      }
+    } catch (error: any) {
       console.error('Error in searchClients:', error)
+      setError(error.message || 'Erreur de recherche')
       setResults([])
     } finally {
       setLoading(false)
@@ -168,7 +191,9 @@ export default function AutocompleteClient({ onSelect, selectedClient }: Autocom
         <div className="absolute z-10 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center text-gray-600">Recherche...</div>
-          ) : results.length === 0 ? (
+          ) : error ? (
+            <div className="p-4 text-center text-red-600">{error}</div>
+          ) : !results || results.length === 0 ? (
             <div className="p-4 text-center text-gray-600">Aucun client trouvé</div>
           ) : (
             results.map((client) => (
