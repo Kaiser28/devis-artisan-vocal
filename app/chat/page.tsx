@@ -16,15 +16,10 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  
-  // Thread info
   const [conversationId, setConversationId] = useState<string | null>(null)
-  const [threadId, setThreadId] = useState<string | null>(null)
-  const [assistantId, setAssistantId] = useState<string | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll vers le bas
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -33,49 +28,47 @@ export default function ChatPage() {
     scrollToBottom()
   }, [messages])
 
-  // Initialiser le thread au chargement
   useEffect(() => {
-    initThread()
+    initConversation()
   }, [])
 
-  async function initThread() {
+  async function initConversation() {
     try {
-      const res = await fetch('/api/assistant/thread')
+      // Créer une conversation simple (sans thread OpenAI)
+      const res = await fetch('/api/chat/init', { method: 'POST' })
       if (!res.ok) {
         if (res.status === 401) {
           router.push('/login')
           return
         }
-        throw new Error('Erreur récupération thread')
+        throw new Error('Erreur initialisation')
       }
 
       const data = await res.json()
       setConversationId(data.conversation_id)
-      setThreadId(data.thread_id)
-      setAssistantId(data.assistant_id)
 
-      console.log('✅ Thread initialisé :', data)
-
-      // Message de bienvenue si nouveau thread
-      if (data.is_new) {
-        setMessages([{
-          id: 'welcome',
-          role: 'assistant',
-          content: `👋 Bonjour ! Je suis votre assistant IA pour la création de devis BTP.
+      // Message de bienvenue
+      setMessages([{
+        id: 'welcome',
+        role: 'assistant',
+        content: `👋 Bonjour ! Je suis votre assistant IA pour la création de devis BTP.
 
 **Que puis-je faire pour vous ?**
 
-📋 **Créer un devis** : "Devis pour Dupont, 50 m² peinture, 20 m² carrelage, remise 10%"
+📋 **Créer un devis** : "Devis pour Dupont, 50 m² peinture, 20 m² carrelage"
 🔍 **Rechercher un client** : "Cherche les clients à Versailles"
 💶 **Consulter les prix** : "Prix de la peinture"
-📊 **Voir un devis** : "Affiche le devis DEV-2026-003"
+📊 **Voir un devis** : "Affiche le devis DEV-2026-002"
 
-**Astuce** : Vous pouvez aussi utiliser le micro 🎤 pour dicter vos demandes !`,
-          timestamp: new Date()
-        }])
-      }
+**Exemples de commandes** :
+• "Cherche Dominique"
+• "Crée un devis pour Jean-Laurore avec 100 m² de peinture"
+• "Quel est le prix du carrelage ?"`,
+        timestamp: new Date()
+      }])
+
     } catch (err) {
-      console.error('Erreur init thread :', err)
+      console.error('Erreur init :', err)
       setError('Erreur d\'initialisation. Veuillez rafraîchir la page.')
     }
   }
@@ -83,7 +76,7 @@ export default function ChatPage() {
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault()
     
-    if (!input.trim() || loading || !threadId || !assistantId) return
+    if (!input.trim() || loading) return
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -98,14 +91,12 @@ export default function ChatPage() {
     setError('')
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch('/api/chat/simple', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage.content,
-          conversation_id: conversationId,
-          thread_id: threadId,
-          assistant_id: assistantId
+          conversation_id: conversationId
         })
       })
 
@@ -116,7 +107,7 @@ export default function ChatPage() {
       const data = await res.json()
 
       const assistantMessage: Message = {
-        id: data.message_id || Date.now().toString(),
+        id: Date.now().toString(),
         role: 'assistant',
         content: data.message,
         timestamp: new Date()
@@ -132,27 +123,11 @@ export default function ChatPage() {
     }
   }
 
-  // Nouvelle conversation
   async function newConversation() {
-    try {
-      const res = await fetch('/api/assistant/thread', { method: 'POST' })
-      if (!res.ok) throw new Error('Erreur création thread')
-
-      const data = await res.json()
-      setConversationId(data.conversation_id)
-      setThreadId(data.thread_id)
-      setAssistantId(data.assistant_id)
-      setMessages([{
-        id: 'welcome',
-        role: 'assistant',
-        content: '👋 Nouvelle conversation démarrée ! Comment puis-je vous aider ?',
-        timestamp: new Date()
-      }])
-      setError('')
-    } catch (err) {
-      console.error('Erreur nouvelle conversation :', err)
-      setError('Erreur création nouvelle conversation')
-    }
+    setMessages([])
+    setConversationId(null)
+    setError('')
+    await initConversation()
   }
 
   return (
@@ -237,20 +212,12 @@ export default function ChatPage() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Tapez votre message... (ex: 'Devis pour Dupont, 50 m² peinture')"
               className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
-              disabled={loading || !threadId}
+              disabled={loading}
             />
-            <button
-              type="button"
-              className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition disabled:opacity-50"
-              disabled={loading || !threadId}
-              title="Reconnaissance vocale (à venir)"
-            >
-              🎤
-            </button>
             <button
               type="submit"
               className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
-              disabled={loading || !input.trim() || !threadId}
+              disabled={loading || !input.trim()}
             >
               {loading ? 'Envoi...' : 'Envoyer'}
             </button>
