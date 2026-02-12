@@ -65,6 +65,47 @@ const TOOLS: OpenAI.Chat.ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
+      name: 'create_client',
+      description: 'Crée un nouveau client dans la base de données. Utilisé quand le client n\'existe pas.',
+      parameters: {
+        type: 'object',
+        properties: {
+          nom: {
+            type: 'string',
+            description: 'Nom de famille du client'
+          },
+          prenom: {
+            type: 'string',
+            description: 'Prénom du client'
+          },
+          email: {
+            type: 'string',
+            description: 'Email du client (optionnel)'
+          },
+          telephone: {
+            type: 'string',
+            description: 'Téléphone du client'
+          },
+          adresse: {
+            type: 'string',
+            description: 'Adresse complète du client (optionnel)'
+          },
+          code_postal: {
+            type: 'string',
+            description: 'Code postal (optionnel)'
+          },
+          ville: {
+            type: 'string',
+            description: 'Ville du client'
+          }
+        },
+        required: ['nom', 'prenom', 'telephone', 'ville']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'search_prices',
       description: 'Recherche dans le catalogue de prix par désignation ou catégorie',
       parameters: {
@@ -175,6 +216,37 @@ async function executeFunctionCall(
 
         if (error) throw error
         return { success: true, clients: clients || [], count: clients?.length || 0 }
+      }
+
+      case 'create_client': {
+        const { nom, prenom, email, telephone, adresse, code_postal, ville } = args
+        
+        const { data: client, error } = await supabase
+          .from('clients')
+          .insert({
+            user_id: userId,
+            nom,
+            prenom,
+            email: email || '',
+            telephone,
+            adresse: adresse || '',
+            code_postal: code_postal || '',
+            ville
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+        return {
+          success: true,
+          client: {
+            id: client.id,
+            nom: client.nom,
+            prenom: client.prenom,
+            ville: client.ville,
+            telephone: client.telephone
+          }
+        }
       }
 
       case 'search_prices': {
