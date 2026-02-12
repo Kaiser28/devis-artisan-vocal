@@ -14,12 +14,12 @@ export async function GET(req: Request) {
   const q = searchParams.get('q') || ''
 
   if (q.length < 2) {
-    return NextResponse.json([])
+    return NextResponse.json({ data: [] })
   }
 
   const { data: clients, error } = await supabase
     .from('clients')
-    .select('id, nom, prenom, email, telephone')
+    .select('id, nom, prenom, email, telephone, adresse, code_postal, ville')
     .eq('user_id', user.id)
     .or(`nom.ilike.%${q}%,prenom.ilike.%${q}%,email.ilike.%${q}%`)
     .order('nom', { ascending: true })
@@ -29,5 +29,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(clients)
+  return NextResponse.json({ data: clients })
 }
