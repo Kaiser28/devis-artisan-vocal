@@ -35,6 +35,12 @@ export default async function AppPage() {
             </div>
             <div className="flex gap-3">
               <a
+                href="/clients"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                👥 Clients
+              </a>
+              <a
                 href="/parametres"
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
               >
