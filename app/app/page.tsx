@@ -80,7 +80,7 @@ export default async function AppPage() {
         {/* Accès rapides */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">🚀 Accès rapides</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <a
               href="/devis/nouveau"
               className="p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl hover:shadow-lg transition-all border-2 border-indigo-200"
@@ -94,16 +94,8 @@ export default async function AppPage() {
               className="p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:shadow-lg transition-all border-2 border-green-200"
             >
               <div className="text-4xl mb-3">🤖</div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">Assistant IA</h3>
-              <p className="text-sm text-gray-600">Discutez avec l'IA pour créer des devis</p>
-            </a>
-            <a
-              href="/devis/vocal"
-              className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:shadow-lg transition-all border-2 border-purple-200"
-            >
-              <div className="text-4xl mb-3">🎙️</div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">Devis vocal</h3>
-              <p className="text-sm text-gray-600">Dictez vos informations à l'oral</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">Assistant IA avec dictée vocale</h3>
+              <p className="text-sm text-gray-600">Discutez ou dictez vos devis à l'oral</p>
             </a>
           </div>
         </div>

@@ -21,8 +21,10 @@ RÈGLES BTP :
 FONCTIONS DISPONIBLES :
 1. search_clients(query) - Recherche clients par nom/ville/téléphone
 2. search_prices(query) - Recherche dans le catalogue de prix
-3. create_devis(client_id, lots, remise_pourcentage, acompte_pourcentage, statut) - Crée un devis
-4. get_devis(numero_or_id) - Récupère un devis existant
+3. create_client(nom, prenom, telephone, ville, email?, adresse?, code_postal?) - Crée un nouveau client
+4. add_price(designation, prix_unitaire_ht, unite, categorie?, tva_taux?) - Ajoute un prix dans le catalogue
+5. create_devis(client_id, lots, remise_pourcentage, acompte_pourcentage, statut) - Crée un devis
+6. get_devis(numero_or_id) - Récupère un devis existant
 
 COMPORTEMENT :
 - Analyse automatique des demandes de devis
@@ -122,6 +124,40 @@ const TOOLS: OpenAI.Chat.ChatCompletionTool[] = [
           }
         },
         required: ['query']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'add_price',
+      description: 'Ajoute un nouveau prix dans le catalogue. Utilisé pour enregistrer une nouvelle prestation ou un nouveau tarif.',
+      parameters: {
+        type: 'object',
+        properties: {
+          designation: {
+            type: 'string',
+            description: 'Désignation de la prestation (ex: "Peinture acrylique murs")'
+          },
+          prix_unitaire_ht: {
+            type: 'number',
+            description: 'Prix unitaire HT en euros'
+          },
+          unite: {
+            type: 'string',
+            description: 'Unité (m², ml, u, heure)'
+          },
+          categorie: {
+            type: 'string',
+            description: 'Catégorie de la prestation (ex: "Peinture", "Carrelage", "Plomberie")'
+          },
+          tva_taux: {
+            type: 'number',
+            description: 'Taux de TVA par défaut en % (20, 10, 5.5 ou 0)',
+            default: 20
+          }
+        },
+        required: ['designation', 'prix_unitaire_ht', 'unite']
       }
     }
   },
@@ -263,6 +299,37 @@ async function executeFunctionCall(
 
         if (error) throw error
         return { success: true, prices: prices || [], count: prices?.length || 0 }
+      }
+
+      case 'add_price': {
+        const { designation, prix_unitaire_ht, unite, categorie = 'Autre', tva_taux = 20 } = args
+        
+        const { data: price, error } = await supabase
+          .from('base_prix')
+          .insert({
+            user_id: userId,
+            designation,
+            prix_unitaire_ht: parseFloat(prix_unitaire_ht),
+            unite,
+            categorie,
+            tva_taux: parseFloat(tva_taux),
+            usage_count: 0
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+        return {
+          success: true,
+          price: {
+            id: price.id,
+            designation: price.designation,
+            prix_unitaire_ht: price.prix_unitaire_ht,
+            unite: price.unite,
+            categorie: price.categorie,
+            tva_taux: price.tva_taux
+          }
+        }
       }
 
       case 'create_devis': {

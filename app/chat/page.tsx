@@ -17,8 +17,10 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [conversationId, setConversationId] = useState<string | null>(null)
+  const [isRecording, setIsRecording] = useState(false)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const recognitionRef = useRef<any>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -30,7 +32,40 @@ export default function ChatPage() {
 
   useEffect(() => {
     initConversation()
+    initSpeechRecognition()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  function initSpeechRecognition() {
+    if (typeof window === 'undefined') return
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    
+    if (!SpeechRecognition) {
+      console.warn('Speech Recognition API non disponible')
+      return
+    }
+
+    recognitionRef.current = new SpeechRecognition()
+    recognitionRef.current.lang = 'fr-FR'
+    recognitionRef.current.continuous = false
+    recognitionRef.current.interimResults = false
+
+    recognitionRef.current.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setInput(transcript)
+    }
+
+    recognitionRef.current.onerror = (event: any) => {
+      console.error('Erreur reconnaissance vocale :', event.error)
+      setIsRecording(false)
+      setError('Erreur lors de la reconnaissance vocale')
+    }
+
+    recognitionRef.current.onend = () => {
+      setIsRecording(false)
+    }
+  }
 
   async function initConversation() {
     try {
@@ -59,6 +94,7 @@ export default function ChatPage() {
 🔍 **Rechercher un client** : "Cherche les clients à Versailles"
 💶 **Consulter les prix** : "Prix de la peinture"
 📊 **Voir un devis** : "Affiche le devis DEV-2026-002"
+💰 **Ajouter un prix** : "Ajoute la peinture acrylique à 12€/m²"
 
 **Exemples de commandes** :
 • "Cherche Dominique"
@@ -128,6 +164,21 @@ export default function ChatPage() {
     setConversationId(null)
     setError('')
     await initConversation()
+  }
+
+  function toggleRecording() {
+    if (!recognitionRef.current) {
+      setError('Reconnaissance vocale non disponible sur ce navigateur')
+      return
+    }
+
+    if (isRecording) {
+      recognitionRef.current.stop()
+    } else {
+      setIsRecording(true)
+      setError('')
+      recognitionRef.current.start()
+    }
   }
 
   return (
@@ -206,11 +257,24 @@ export default function ChatPage() {
       <div className="bg-white border-t border-gray-200 px-6 py-4">
         <form onSubmit={sendMessage} className="max-w-4xl mx-auto">
           <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={toggleRecording}
+              className={`px-4 py-3 rounded-lg transition ${
+                isRecording 
+                  ? 'bg-red-600 text-white animate-pulse' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              disabled={loading}
+              title={isRecording ? 'Arrêter l\'enregistrement' : 'Dictée vocale'}
+            >
+              {isRecording ? '⏹️ Stop' : '🎙️'}
+            </button>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Tapez votre message... (ex: 'Devis pour Dupont, 50 m² peinture')"
+              placeholder="Tapez ou dictez votre message... (ex: 'Devis pour Dupont, 50 m² peinture')"
               className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
               disabled={loading}
             />
@@ -225,7 +289,7 @@ export default function ChatPage() {
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-3">
-          💡 Exemples : "Devis Dupont 50 m² peinture" • "Cherche clients à Versailles" • "Prix carrelage"
+          🎙️ Cliquez sur le micro pour dicter • 💡 Exemples : "Devis Dupont 50 m² peinture" • "Cherche clients à Versailles" • "Prix carrelage"
         </p>
       </div>
     </div>
