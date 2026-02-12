@@ -67,7 +67,59 @@ export default function NewDevisPage() {
   // Charger les paramètres de l'artisan
   useEffect(() => {
     fetchSettings()
+    loadVocalData() // Charger données vocales si présentes
   }, [])
+
+  const loadVocalData = () => {
+    try {
+      const vocalDataStr = sessionStorage.getItem('vocal_devis_data')
+      if (!vocalDataStr) return
+
+      const vocalData = JSON.parse(vocalDataStr)
+      
+      // Pré-remplir le client
+      if (vocalData.client) {
+        const clientData = vocalData.client
+        setSelectedClient({
+          id: clientData.client_id || '',
+          nom: clientData.nom || '',
+          prenom: clientData.prenom || '',
+          email: '',
+          telephone: clientData.telephone || '',
+          adresse: clientData.adresse || '',
+          code_postal: clientData.code_postal || '',
+          ville: clientData.ville || ''
+        })
+      }
+
+      // Pré-remplir les lots
+      if (vocalData.lots && vocalData.lots.length > 0) {
+        const lotsFromVocal = vocalData.lots.map((lot: any, index: number) => ({
+          id: `${index + 1}`,
+          designation: lot.designation,
+          quantite: lot.quantite,
+          unite: lot.unite,
+          prix_unitaire_ht: lot.prix_unitaire_ht || lot.prix_suggere || 0,
+          tva_taux: lot.tva_taux || 20,
+          total_ht: (lot.quantite * (lot.prix_unitaire_ht || lot.prix_suggere || 0))
+        }))
+        setLots(lotsFromVocal)
+      }
+
+      // Pré-remplir remise et acompte
+      if (vocalData.remise_pourcentage) {
+        setRemisePourcentage(vocalData.remise_pourcentage)
+      }
+      if (vocalData.acompte_pourcentage) {
+        setAcomptePourcentage(vocalData.acompte_pourcentage)
+      }
+
+      // Nettoyer sessionStorage
+      sessionStorage.removeItem('vocal_devis_data')
+    } catch (err) {
+      console.error('Erreur chargement données vocales:', err)
+    }
+  }
 
   const fetchSettings = async () => {
     try {
