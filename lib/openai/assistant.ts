@@ -74,7 +74,7 @@ Voulez-vous créer ce devis ?"
 IMPORTANT : Utilise TOUJOURS les fonctions disponibles (search_clients, search_prices, create_devis) plutôt que de deviner les informations.`
 
 // Définition des fonctions (tools) disponibles pour l'assistant
-export const ASSISTANT_TOOLS: OpenAI.Beta.AssistantCreateParams.AssistantToolsFunction[] = [
+export const ASSISTANT_TOOLS: any[] = [
   {
     type: 'function',
     function: {

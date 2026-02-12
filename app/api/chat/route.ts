@@ -366,14 +366,25 @@ export async function POST(request: NextRequest) {
           })
         )
 
-        // Soumettre les résultats
-        run = (await openai.beta.threads.runs.submitToolOutputs(
-          thread_id, 
-          run.id, 
+        // Soumettre les résultats via l'API REST directement (contournement du problème TypeScript)
+        const response = await fetch(
+          `https://api.openai.com/v1/threads/${thread_id}/runs/${run.id}/submit_tool_outputs`,
           {
-            tool_outputs: toolOutputs
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+              'Content-Type': 'application/json',
+              'OpenAI-Beta': 'assistants=v2'
+            },
+            body: JSON.stringify({ tool_outputs: toolOutputs })
           }
-        )) as any
+        )
+        
+        if (!response.ok) {
+          throw new Error(`Submit tool outputs failed: ${await response.text()}`)
+        }
+        
+        run = await response.json()
 
 
         functionCallCount++
