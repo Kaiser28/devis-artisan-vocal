@@ -49,14 +49,17 @@ export default function ClientsPage() {
     const data = await res.json()
 
     if (res.ok) {
-      setClients(data.clients)
-      setPagination(data.pagination)
+      setClients(data.clients || [])
+      if (data.pagination) {
+        setPagination(data.pagination)
+      }
     }
     setLoading(false)
   }
 
   useEffect(() => {
     fetchClients()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.page, search, sortBy, sortOrder])
 
   const handleDelete = async (id: string, nom: string) => {
