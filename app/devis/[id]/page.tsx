@@ -51,6 +51,7 @@ export default function DevisDetailPage() {
   const [loading, setLoading] = useState(true)
   const [devis, setDevis] = useState<Devis | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [generatingPDF, setGeneratingPDF] = useState(false)
 
   useEffect(() => {
     fetchDevis()
@@ -80,6 +81,29 @@ export default function DevisDetailPage() {
       router.push('/devis')
     } catch (err: any) {
       alert('Erreur lors de la suppression')
+    }
+  }
+
+  const handleDownloadPDF = async () => {
+    setGeneratingPDF(true)
+    try {
+      // Import dynamique pour éviter le chargement côté serveur
+      const { generateDevisPDF } = await import('@/lib/pdf/generateDevisPDF')
+      
+      // Récupérer les paramètres artisan
+      const settingsResponse = await fetch('/api/settings')
+      const settingsData = settingsResponse.ok ? await settingsResponse.json() : null
+      
+      // Générer le PDF
+      const doc = await generateDevisPDF(devis as any, settingsData?.data)
+      
+      // Télécharger
+      doc.save(`Devis_${devis?.numero}.pdf`)
+    } catch (err: any) {
+      alert('Erreur lors de la génération du PDF')
+      console.error(err)
+    } finally {
+      setGeneratingPDF(false)
     }
   }
 
@@ -146,6 +170,13 @@ export default function DevisDetailPage() {
             </span>
           </div>
           <div className="flex gap-3">
+            <button
+              onClick={handleDownloadPDF}
+              disabled={generatingPDF}
+              className="px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {generatingPDF ? '⏳ Génération...' : '📥 Télécharger PDF'}
+            </button>
             <button
               onClick={() => router.push(`/devis/${devisId}/edit`)}
               className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium"
