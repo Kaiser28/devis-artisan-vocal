@@ -1,0 +1,10 @@
+Pour vérifier :
+1. Va sur /parametres
+2. Vérifie que tu as bien rempli :
+   - Raison sociale
+   - SIRET
+   - Adresse, code postal, ville
+   - Téléphone, email
+   - Logo uploadé
+3. Si manquant, remplis et sauvegarde
+4. Reteste le PDF
