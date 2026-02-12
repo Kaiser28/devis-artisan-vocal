@@ -41,6 +41,12 @@ export default async function AppPage() {
                 👥 Clients
               </a>
               <a
+                href="/base-prix"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                💰 Base de prix
+              </a>
+              <a
                 href="/parametres"
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
               >
