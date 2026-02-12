@@ -33,7 +33,15 @@ export default async function AppPage() {
               <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
               <p className="text-gray-600 mt-1">Bienvenue, {user.email}</p>
             </div>
-            <LogoutButton />
+            <div className="flex gap-3">
+              <a
+                href="/parametres"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                ⚙️ Paramètres
+              </a>
+              <LogoutButton />
+            </div>
           </div>
         </div>
 

@@ -61,20 +61,13 @@ export default function SubscriptionStatus() {
       {/* Badge statut */}
       {data.status === 'trialing' && (
         <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold mb-1">🎁 Période d'essai gratuite</h3>
-              <p className="text-indigo-100">
-                {daysRemaining !== null && daysRemaining > 0 
-                  ? `Plus que ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}`
-                  : 'Votre essai expire aujourd\'hui'}
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold">{data.devis_remaining}</div>
-              <div className="text-indigo-100 text-sm">devis restants</div>
-            </div>
-          </div>
+          <h3 className="text-xl font-bold mb-2">🎁 Période d'essai gratuite</h3>
+          <p className="text-indigo-100 text-lg">
+            {daysRemaining !== null && daysRemaining > 0 
+              ? `Plus que ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}`
+              : 'Votre essai expire aujourd\'hui'}
+          </p>
+          <p className="text-indigo-200 text-sm mt-2">Accès illimité pendant la période d'essai</p>
         </div>
       )}
 
