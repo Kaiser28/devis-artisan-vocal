@@ -22,14 +22,28 @@ export async function POST(req: Request) {
   let event: Stripe.Event
 
   try {
+    // Debug: Vérifier que la clé webhook est présente
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+    if (!webhookSecret) {
+      console.error('❌ STRIPE_WEBHOOK_SECRET est undefined !')
+      return NextResponse.json(
+        { error: 'Webhook secret non configuré' },
+        { status: 500 }
+      )
+    }
+    
+    console.log('🔑 Webhook secret présent:', webhookSecret.substring(0, 10) + '...')
+    
     // Vérifier la signature Stripe
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      webhookSecret
     )
+    
+    console.log('✅ Signature webhook validée, événement:', event.type)
   } catch (err: any) {
-    console.error('Erreur signature webhook:', err.message)
+    console.error('❌ Erreur signature webhook:', err.message)
     return NextResponse.json(
       { error: `Webhook Error: ${err.message}` },
       { status: 400 }
