@@ -7,275 +7,222 @@ export default function LandingPage() {
       </head>
       <body className="bg-white text-gray-900">
 
-{/* Hero Section - Ultra direct */}
-<section className="relative bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-900 text-white overflow-hidden">
-  <div className="absolute inset-0 bg-black opacity-10"></div>
+{/* Hero Section - Version sobre */}
+<section className="relative bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 text-white overflow-hidden">
+  <div className="absolute inset-0 bg-black opacity-5"></div>
   
-  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
-    {/* Badge urgence */}
-    <div className="flex justify-center mb-8">
-      <div className="inline-flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse">
-        ⚠️ Fenêtre d'opportunité : 6-12 mois avant saturation du marché
-      </div>
-    </div>
-
-    {/* Headline choc */}
-    <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-center leading-tight mb-6">
-      Vous perdez <span className="text-yellow-400">15 heures par semaine</span><br/>
-      sur les devis et l'administratif
+  <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+    {/* Headline sobre */}
+    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-center leading-tight mb-6">
+      Récupérez 15 heures par semaine
     </h1>
 
     {/* Sous-titre problème */}
-    <p className="text-xl sm:text-2xl text-center text-indigo-100 mb-4 max-w-4xl mx-auto">
-      500k€ de CA mais coincé 60h/semaine à répondre aux emails à 22h ?<br/>
-      <span className="font-bold text-yellow-300">L'IA prend le relais. Vous redevenez chef d'entreprise.</span>
+    <p className="text-xl sm:text-2xl text-center text-slate-200 mb-12 max-w-3xl mx-auto">
+      Artisan BTP ? Arrêtez de perdre du temps sur les devis et l'administratif.<br className="hidden sm:block"/>
+      L'IA fait le travail pendant que vous êtes sur le chantier.
     </p>
 
-    {/* Social proof immédiat */}
-    <div className="flex flex-wrap justify-center gap-8 mb-12 text-sm text-indigo-200">
-      <div className="flex items-center gap-2">
-        <span>⏱️</span>
-        <span><strong className="text-white">15h</strong> récupérées/sem</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span>🚀</span>
-        <span>Devis en <strong className="text-white">2 minutes</strong></span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span>📈</span>
-        <span><strong className="text-white">+40%</strong> de conversions</span>
-      </div>
-    </div>
-
-    {/* CTA principal */}
+    {/* CTA principal sobre */}
     <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
-      <a href="/signup" className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-lg px-10 py-5 rounded-lg shadow-2xl transition-all transform hover:scale-105">
-        🎁 Démarrer mon essai gratuit (7 jours)
+      <a href="/signup" className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-900 font-semibold text-lg px-10 py-4 rounded-lg shadow-lg transition-colors">
+        Essayer 7 jours gratuitement
       </a>
-      <a href="/login" className="w-full sm:w-auto bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-semibold text-lg px-10 py-5 rounded-lg backdrop-blur-sm transition-all">
-        ▶️ Se connecter
+      <a href="/login" className="w-full sm:w-auto border-2 border-white hover:bg-white hover:bg-opacity-10 text-white font-medium text-lg px-10 py-4 rounded-lg transition-all">
+        Se connecter
       </a>
     </div>
 
     {/* Garantie */}
-    <p className="text-center text-sm text-indigo-200">
-      🔒 Sans engagement • Annulation à tout moment • 29,99€/mois après 7 jours
+    <p className="text-center text-sm text-slate-300">
+      Sans engagement • 29,99€/mois après l'essai • Annulation à tout moment
     </p>
-  </div>
 
-  {/* Wave divider */}
-  <div className="absolute bottom-0 left-0 right-0">
-    <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0,64L60,69.3C120,75,240,85,360,80C480,75,600,53,720,48C840,43,960,53,1080,58.7C1200,64,1320,64,1380,64L1440,64L1440,120L1380,120C1320,120,1200,120,1080,120C960,120,840,120,720,120C600,120,480,120,360,120C240,120,120,120,60,120L0,120Z" fill="white"/>
-    </svg>
+    {/* Stats sobres */}
+    <div className="grid grid-cols-3 gap-6 mt-16 max-w-3xl mx-auto">
+      <div className="text-center">
+        <div className="text-3xl font-bold mb-2">15h</div>
+        <div className="text-sm text-slate-300">gagnées par semaine</div>
+      </div>
+      <div className="text-center border-l border-r border-slate-600">
+        <div className="text-3xl font-bold mb-2">2 min</div>
+        <div className="text-sm text-slate-300">pour créer un devis</div>
+      </div>
+      <div className="text-center">
+        <div className="text-3xl font-bold mb-2">+40%</div>
+        <div className="text-sm text-slate-300">de conversions</div>
+      </div>
+    </div>
   </div>
 </section>
 
-{/* Problème amplifié - Identification immédiate */}
+{/* Problème - Version sobre */}
 <section className="py-20 bg-white">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
     <div className="text-center mb-16">
-      <h2 className="text-4xl sm:text-5xl font-black text-gray-900 mb-6">
-        Ça vous parle ?
+      <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+        Votre quotidien d'artisan
       </h2>
+      <p className="text-lg text-gray-600">Ces situations vous parlent ?</p>
     </div>
 
     <div className="grid md:grid-cols-3 gap-8 mb-16">
-      {/* Pain point 1 */}
-      <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-lg">
-        <div className="flex items-start gap-4">
-          <span className="text-3xl">⏰</span>
-          <div>
-            <h3 className="font-bold text-lg text-gray-900 mb-2">19h-22h : Devis sur le coin de table</h3>
-            <p className="text-gray-700">Chantier jusqu'à 18h, admin jusqu'à minuit. Votre femme vous voit à peine.</p>
-          </div>
-        </div>
+      <div className="bg-gray-50 border-l-4 border-slate-700 p-6 rounded-r-lg">
+        <h3 className="font-semibold text-lg text-gray-900 mb-3">Fin de journée interminable</h3>
+        <p className="text-gray-700">Chantier jusqu'à 18h, puis devis et administratif jusqu'à 22h. Le week-end, vous rattrapez le retard.</p>
       </div>
 
-      {/* Pain point 2 */}
-      <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-lg">
-        <div className="flex items-start gap-4">
-          <span className="text-3xl">📵</span>
-          <div>
-            <h3 className="font-bold text-lg text-gray-900 mb-2">Client rappelle 3 fois → part chez concurrent</h3>
-            <p className="text-gray-700">Vous êtes sur un toit, impossible de répondre. Le concurrent répond en 2h, lui.</p>
-          </div>
-        </div>
+      <div className="bg-gray-50 border-l-4 border-slate-700 p-6 rounded-r-lg">
+        <h3 className="font-semibold text-lg text-gray-900 mb-3">Clients qui partent</h3>
+        <p className="text-gray-700">Impossible de répondre rapidement depuis le chantier. Le concurrent qui répond en 2h remporte le marché.</p>
       </div>
 
-      {/* Pain point 3 */}
-      <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-lg">
-        <div className="flex items-start gap-4">
-          <span className="text-3xl">🚫</span>
-          <div>
-            <h3 className="font-bold text-lg text-gray-900 mb-2">Zéro vacances depuis 2 ans</h3>
-            <p className="text-gray-700">Personne pour gérer les devis entrants. Partir = perdre des clients.</p>
-          </div>
-        </div>
+      <div className="bg-gray-50 border-l-4 border-slate-700 p-6 rounded-r-lg">
+        <h3 className="font-semibold text-lg text-gray-900 mb-3">Pas de vacances possibles</h3>
+        <p className="text-gray-700">Personne pour gérer les devis entrants. Partir signifie perdre des opportunités.</p>
       </div>
     </div>
 
-    {/* Stat choc */}
-    <div className="bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl p-12 text-center shadow-2xl">
-      <p className="text-6xl font-black mb-4">30-40%</p>
-      <p className="text-2xl font-semibold mb-2">de prospects perdus par délai de réponse</p>
-      <p className="text-red-100">Vous refusez des chantiers alors que vous avez le savoir-faire. Juste pas le TEMPS.</p>
+    <div className="bg-slate-100 rounded-xl p-8 text-center">
+      <p className="text-4xl font-bold text-slate-900 mb-3">30-40%</p>
+      <p className="text-xl font-semibold text-slate-800 mb-2">de prospects perdus par délai de réponse</p>
+      <p className="text-slate-600">Vous avez le savoir-faire. Juste pas le temps de répondre assez vite.</p>
     </div>
   </div>
 </section>
 
-{/* ROI Calculator - Chiffrage précis */}
-<section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+{/* ROI - Version sobre */}
+<section className="py-20 bg-slate-50">
   <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl shadow-2xl p-12 text-white">
-      <h2 className="text-4xl font-black text-center mb-8">
-        🧮 Calculez ce que vous PERDEZ chaque mois
+    <div className="bg-white rounded-2xl shadow-lg p-12 border border-slate-200">
+      <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
+        Le calcul est simple
       </h2>
 
       <div className="grid md:grid-cols-3 gap-8 mb-12">
         <div className="text-center">
-          <div className="text-5xl font-black text-yellow-400 mb-2">15h</div>
-          <div className="text-indigo-200">par semaine sur admin</div>
-          <div className="text-sm text-indigo-300 mt-2">= 60h/mois gaspillées</div>
+          <div className="text-4xl font-bold text-slate-900 mb-2">60h/mois</div>
+          <div className="text-slate-600">perdues sur l'admin</div>
         </div>
         <div className="text-center">
-          <div className="text-5xl font-black text-yellow-400 mb-2">×80€</div>
-          <div className="text-indigo-200">votre taux horaire chantier</div>
-          <div className="text-sm text-indigo-300 mt-2">(CA 500k€ = ~80€/h)</div>
+          <div className="text-4xl font-bold text-slate-900 mb-2">× 80€/h</div>
+          <div className="text-slate-600">votre taux horaire</div>
         </div>
         <div className="text-center">
-          <div className="text-5xl font-black text-red-400 mb-2">4 800€</div>
-          <div className="text-indigo-200">perdus CHAQUE MOIS</div>
-          <div className="text-sm text-indigo-300 mt-2">= 57 600€/an en fumée</div>
+          <div className="text-4xl font-bold text-red-600 mb-2">= 4 800€</div>
+          <div className="text-slate-600">en fumée chaque mois</div>
         </div>
       </div>
 
-      <div className="bg-white bg-opacity-10 backdrop-blur rounded-2xl p-8 mb-8">
-        <h3 className="text-2xl font-bold mb-4 text-center">Avec Sferia à 29,99€/mois :</h3>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <p className="text-lg mb-2"><strong>Investissement :</strong></p>
-            <p className="text-3xl font-black text-yellow-400">29,99€/mois</p>
+      <div className="bg-slate-50 rounded-xl p-8 mb-8">
+        <h3 className="text-xl font-semibold mb-6 text-center text-gray-900">Avec Sferia</h3>
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          <div className="text-center">
+            <p className="text-sm text-slate-600 mb-2">Investissement</p>
+            <p className="text-3xl font-bold text-slate-900">29,99€/mois</p>
           </div>
-          <div>
-            <p className="text-lg mb-2"><strong>Temps récupéré :</strong></p>
-            <p className="text-3xl font-black text-green-400">60h/mois</p>
+          <div className="text-center">
+            <p className="text-sm text-slate-600 mb-2">Temps récupéré</p>
+            <p className="text-3xl font-bold text-green-600">60h/mois</p>
           </div>
         </div>
-        <div className="mt-6 pt-6 border-t border-white border-opacity-20">
-          <p className="text-center text-2xl font-bold">
-            ROI : <span className="text-yellow-400">16 000%</span> 🚀
-          </p>
-          <p className="text-center text-indigo-200 mt-2">
-            29,99€ investis = 4 800€ de valeur récupérée. C'est mathématique.
+        <div className="pt-6 border-t border-slate-200">
+          <p className="text-center text-lg">
+            <span className="font-semibold">ROI : </span>
+            <span className="text-2xl font-bold text-slate-900">160× votre investissement</span>
           </p>
         </div>
       </div>
 
       <div className="text-center">
-        <a href="/signup" className="inline-block bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-xl px-12 py-6 rounded-xl shadow-2xl transition-all transform hover:scale-105">
-          Je récupère mes 15h/semaine maintenant →
+        <a href="/signup" className="inline-block bg-slate-900 hover:bg-slate-800 text-white font-semibold text-lg px-12 py-4 rounded-lg shadow-lg transition-colors">
+          Démarrer l'essai gratuit
         </a>
-        <p className="text-sm text-indigo-200 mt-4">7 jours gratuits • 29,99€/mois ensuite</p>
+        <p className="text-sm text-slate-600 mt-4">7 jours gratuits • 29,99€/mois ensuite</p>
       </div>
     </div>
   </div>
 </section>
 
-{/* CTA Final */}
-<section className="py-20 bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-900 text-white">
-  <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-    <h2 className="text-4xl sm:text-6xl font-black mb-8">
-      Vous avez deux choix
+{/* CTA Final sobre */}
+<section className="py-20 bg-slate-900 text-white">
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <h2 className="text-3xl sm:text-4xl font-bold mb-8">
+      Testez sans risque pendant 7 jours
     </h2>
 
     <div className="grid md:grid-cols-2 gap-8 mb-12">
-      {/* Choix 1 - Ne rien faire */}
-      <div className="bg-red-500 bg-opacity-20 backdrop-blur rounded-2xl p-8 border-2 border-red-400">
-        <div className="text-6xl mb-4">❌</div>
-        <h3 className="text-2xl font-bold mb-4">Continuer comme avant</h3>
-        <ul className="text-left space-y-2 text-red-100">
-          <li>→ 15h/semaine gaspillées sur l'admin</li>
-          <li>→ Clients perdus par délai de réponse</li>
-          <li>→ Concurrents IA vous dépassent en 6 mois</li>
-          <li>→ Épuisement, 0 vacances, stress constant</li>
-          <li>→ Dans 1 an : vous survivez avec les miettes</li>
+      <div className="bg-white bg-opacity-5 rounded-xl p-6 border border-slate-700">
+        <h3 className="text-xl font-semibold mb-4">Sans Sferia</h3>
+        <ul className="text-left space-y-2 text-slate-300 text-sm">
+          <li>• 15h/semaine sur l'administratif</li>
+          <li>• Clients perdus par lenteur</li>
+          <li>• Retard sur la concurrence</li>
+          <li>• Stress permanent</li>
         </ul>
       </div>
 
-      {/* Choix 2 - Agir */}
-      <div className="bg-green-500 bg-opacity-20 backdrop-blur rounded-2xl p-8 border-2 border-green-400">
-        <div className="text-6xl mb-4">✅</div>
-        <h3 className="text-2xl font-bold mb-4">Essayer Sferia 7 jours gratuits</h3>
-        <ul className="text-left space-y-2 text-green-100">
-          <li>→ 15h/semaine récupérées dès la 1ère semaine</li>
-          <li>→ Réponse client en 15 min → +40% conversions</li>
-          <li>→ 6 mois d'avance sur vos concurrents</li>
-          <li>→ Redevenez chef, pas esclave de l'admin</li>
-          <li>→ Dans 1 an : vous dominez votre marché local</li>
+      <div className="bg-white bg-opacity-10 rounded-xl p-6 border border-slate-600">
+        <h3 className="text-xl font-semibold mb-4">Avec Sferia</h3>
+        <ul className="text-left space-y-2 text-white text-sm">
+          <li>• 15h/semaine récupérées</li>
+          <li>• Réponse rapide = plus de clients</li>
+          <li>• Avance technologique</li>
+          <li>• Sérénité retrouvée</li>
         </ul>
       </div>
     </div>
 
-    <div className="bg-white bg-opacity-10 backdrop-blur rounded-2xl p-8 mb-8">
-      <p className="text-2xl font-bold mb-4">
-        Risque de tester 7 jours gratuitement : <span className="text-yellow-400">0€</span>
-      </p>
-      <p className="text-xl text-indigo-200">
-        Risque de ne rien faire : <span className="text-red-400 font-bold">57 600€/an perdus</span> + dépassé par la concurrence
-      </p>
-    </div>
-
-    <a href="/signup" className="inline-block bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-2xl px-16 py-8 rounded-2xl shadow-2xl transition-all transform hover:scale-105 mb-6">
-      🚀 Je démarre mon essai gratuit maintenant
+    <a href="/signup" className="inline-block bg-white hover:bg-slate-50 text-slate-900 font-semibold text-xl px-14 py-5 rounded-lg shadow-lg transition-colors mb-6">
+      Commencer l'essai gratuit
     </a>
 
-    <p className="text-sm text-indigo-200">
-      7 jours gratuits • 29,99€/mois ensuite • Annulation en 2 clics
+    <p className="text-sm text-slate-400">
+      7 jours gratuits • 29,99€/mois • Annulation en 2 clics
     </p>
   </div>
 </section>
 
-{/* Footer simple */}
-<footer className="bg-gray-900 text-gray-400 py-12">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+{/* Footer sobre */}
+<footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-12">
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
     <div className="grid md:grid-cols-4 gap-8 mb-8">
       <div>
-        <h3 className="text-white font-bold text-lg mb-4">Sferia</h3>
-        <p className="text-sm">L'IA qui redonne 15h/semaine aux artisans BTP.</p>
+        <h3 className="text-white font-semibold text-lg mb-4">Sferia</h3>
+        <p className="text-sm">Automatisation IA pour artisans BTP</p>
       </div>
       <div>
-        <h4 className="text-white font-semibold mb-4">Produit</h4>
+        <h4 className="text-white font-medium mb-4">Produit</h4>
         <ul className="space-y-2 text-sm">
-          <li><a href="/login" className="hover:text-white">Connexion</a></li>
-          <li><a href="/signup" className="hover:text-white">Inscription</a></li>
+          <li><a href="/login" className="hover:text-white transition-colors">Connexion</a></li>
+          <li><a href="/signup" className="hover:text-white transition-colors">Inscription</a></li>
         </ul>
       </div>
       <div>
-        <h4 className="text-white font-semibold mb-4">Support</h4>
+        <h4 className="text-white font-medium mb-4">Support</h4>
         <ul className="space-y-2 text-sm">
-          <li><a href="/aide" className="hover:text-white">Centre d'aide</a></li>
-          <li><a href="/contact" className="hover:text-white">Contact</a></li>
+          <li><a href="/aide" className="hover:text-white transition-colors">Aide</a></li>
+          <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
         </ul>
       </div>
       <div>
-        <h4 className="text-white font-semibold mb-4">Légal</h4>
+        <h4 className="text-white font-medium mb-4">Légal</h4>
         <ul className="space-y-2 text-sm">
-          <li><a href="/cgv" className="hover:text-white">CGV</a></li>
-          <li><a href="/confidentialite" className="hover:text-white">Confidentialité</a></li>
+          <li><a href="/cgv" className="hover:text-white transition-colors">CGV</a></li>
+          <li><a href="/confidentialite" className="hover:text-white transition-colors">Confidentialité</a></li>
         </ul>
       </div>
     </div>
-    <div className="border-t border-gray-800 pt-8 text-center text-sm">
-      <p>&copy; 2026 Sferia - Voisins-le-Bretonneux, France</p>
+    <div className="border-t border-slate-800 pt-8 text-center text-sm">
+      <p>&copy; 2026 Sferia - Voisins-le-Bretonneux</p>
     </div>
   </div>
 </footer>
 
-{/* Sticky CTA mobile */}
-<div className="fixed bottom-0 left-0 right-0 bg-yellow-400 p-4 shadow-2xl md:hidden z-50">
-  <a href="/signup" className="block text-center text-gray-900 font-bold text-lg">
-    Essai gratuit 7 jours →
+{/* Sticky CTA mobile sobre */}
+<div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 shadow-lg md:hidden z-50">
+  <a href="/signup" className="block text-center bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-lg transition-colors">
+    Essai gratuit 7 jours
   </a>
 </div>
 
