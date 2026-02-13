@@ -1,156 +1,9 @@
 // Validateur de prix pour l'IA
 // Garantit que les prix générés sont cohérents avec les fourchettes BTP 2026
+// Base de données : 112 prix réels (sources : hemea, obat, helloArtisan, travaux.com)
 
-interface PriceRange {
-  designation: string
-  categorie: string
-  unite: string
-  min_ht: number
-  max_ht: number
-  tva_taux: number
-  source: string
-}
+import { COMPREHENSIVE_PRICE_DATABASE, type ComprehensivePriceReference } from './comprehensive-price-database'
 
-// Base de référence BTP 2026 (données réelles)
-const PRICE_REFERENCES: PriceRange[] = [
-  // Peinture
-  {
-    designation: 'Peinture intérieure murs',
-    categorie: 'Peinture',
-    unite: 'm²',
-    min_ht: 15,
-    max_ht: 40,
-    tva_taux: 10,
-    source: 'Travaux.com 2026'
-  },
-  {
-    designation: 'Peinture plafond',
-    categorie: 'Peinture',
-    unite: 'm²',
-    min_ht: 25,
-    max_ht: 35,
-    tva_taux: 10,
-    source: 'Obat.fr 2026'
-  },
-  {
-    designation: 'Peinture extérieure',
-    categorie: 'Peinture',
-    unite: 'm²',
-    min_ht: 20,
-    max_ht: 45,
-    tva_taux: 10,
-    source: 'Obat.fr 2026'
-  },
-  
-  // Carrelage
-  {
-    designation: 'Carrelage ciment',
-    categorie: 'Carrelage',
-    unite: 'm²',
-    min_ht: 50,
-    max_ht: 150,
-    tva_taux: 10,
-    source: 'Obat.fr 2026'
-  },
-  {
-    designation: 'Carrelage mosaïque',
-    categorie: 'Carrelage',
-    unite: 'm²',
-    min_ht: 15,
-    max_ht: 70,
-    tva_taux: 10,
-    source: 'Obat.fr 2026'
-  },
-  {
-    designation: 'Carrelage marbre',
-    categorie: 'Carrelage',
-    unite: 'm²',
-    min_ht: 45,
-    max_ht: 150,
-    tva_taux: 10,
-    source: 'Obat.fr 2026'
-  },
-  {
-    designation: 'Pose carrelage standard',
-    categorie: 'Carrelage',
-    unite: 'm²',
-    min_ht: 30,
-    max_ht: 60,
-    tva_taux: 10,
-    source: 'Estimations BTP 2026'
-  },
-  
-  // Plomberie
-  {
-    designation: 'Plomberie rénovation',
-    categorie: 'Plomberie',
-    unite: 'm²',
-    min_ht: 70,
-    max_ht: 150,
-    tva_taux: 20,
-    source: 'helloArtisan 2026'
-  },
-  {
-    designation: 'Remplacement robinetterie',
-    categorie: 'Plomberie',
-    unite: 'u',
-    min_ht: 80,
-    max_ht: 200,
-    tva_taux: 20,
-    source: 'helloArtisan 2026'
-  },
-  {
-    designation: 'Réparation chasse d\'eau',
-    categorie: 'Plomberie',
-    unite: 'u',
-    min_ht: 60,
-    max_ht: 120,
-    tva_taux: 20,
-    source: 'helloArtisan 2026'
-  },
-  {
-    designation: 'Remplacement WC',
-    categorie: 'Plomberie',
-    unite: 'u',
-    min_ht: 200,
-    max_ht: 400,
-    tva_taux: 20,
-    source: 'helloArtisan 2026'
-  },
-  
-  // Électricité
-  {
-    designation: 'Point électrique',
-    categorie: 'Électricité',
-    unite: 'u',
-    min_ht: 80,
-    max_ht: 150,
-    tva_taux: 20,
-    source: 'Estimations BTP 2026'
-  },
-  {
-    designation: 'Tableau électrique',
-    categorie: 'Électricité',
-    unite: 'u',
-    min_ht: 800,
-    max_ht: 1500,
-    tva_taux: 20,
-    source: 'Estimations BTP 2026'
-  },
-  
-  // Main-d'œuvre
-  {
-    designation: 'Main-d\'œuvre artisan',
-    categorie: 'Main-d\'œuvre',
-    unite: 'heure',
-    min_ht: 40,
-    max_ht: 70,
-    tva_taux: 20,
-    source: 'Obat.fr 2026'
-  }
-]
-
-// Système de validation
 export interface PriceValidationResult {
   isValid: boolean
   confidence: 'high' | 'medium' | 'low'
@@ -158,7 +11,7 @@ export interface PriceValidationResult {
   suggestions?: {
     min_suggested: number
     max_suggested: number
-    reference?: PriceRange
+    reference?: ComprehensivePriceReference
   }
 }
 
@@ -174,7 +27,7 @@ export function validatePrice(
     warnings: []
   }
 
-  // 1. Recherche dans la base de référence
+  // 1. Recherche dans la base de référence (112 prix)
   const reference = findBestMatch(designation, categorie, unite)
 
   if (reference) {
@@ -193,7 +46,7 @@ export function validatePrice(
       result.confidence = 'low'
       result.warnings.push(
         `⚠️ Prix suspect : ${prix_ht}€/${unite} pour "${designation}".\n` +
-        `Fourchette habituelle : ${reference.min_ht}-${reference.max_ht}€/${unite} (${reference.source})`
+        `Fourchette habituelle 2026 : ${reference.min_ht}-${reference.max_ht}€/${unite} (${reference.source})`
       )
       result.suggestions = {
         min_suggested: reference.min_ht,
@@ -206,7 +59,7 @@ export function validatePrice(
       result.confidence = 'medium'
       result.warnings.push(
         `💡 Prix inhabituel mais acceptable : ${prix_ht}€/${unite}.\n` +
-        `Fourchette standard : ${reference.min_ht}-${reference.max_ht}€/${unite}`
+        `Fourchette standard 2026 : ${reference.min_ht}-${reference.max_ht}€/${unite}`
       )
       result.suggestions = {
         min_suggested: reference.min_ht,
@@ -234,17 +87,17 @@ export function validatePrice(
   return result
 }
 
-// Recherche de correspondance floue
+// Recherche de correspondance floue dans la base de 112 prix
 function findBestMatch(
   designation: string,
   categorie: string | undefined,
   unite: string
-): PriceRange | null {
+): ComprehensivePriceReference | null {
   const designationLower = designation.toLowerCase()
   const categorieLower = categorie?.toLowerCase()
 
   // Correspondance exacte ou partielle
-  for (const ref of PRICE_REFERENCES) {
+  for (const ref of COMPREHENSIVE_PRICE_DATABASE) {
     const refDesignationLower = ref.designation.toLowerCase()
     const refCategorieLower = ref.categorie.toLowerCase()
 
@@ -270,12 +123,7 @@ function findBestMatch(
   return null
 }
 
-// Fonction pour ajouter dynamiquement une référence
-export function addPriceReference(reference: PriceRange) {
-  PRICE_REFERENCES.push(reference)
-}
-
 // Export de la base de référence pour l'import dans Supabase
 export function getReferences() {
-  return PRICE_REFERENCES
+  return COMPREHENSIVE_PRICE_DATABASE
 }
