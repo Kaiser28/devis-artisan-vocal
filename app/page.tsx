@@ -14,7 +14,7 @@ export default function LandingPage() {
   <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
     {/* Logo CLIC DEVIS */}
     <div className="flex justify-center mb-8">
-      <img src="https://www.genspark.ai/api/files/s/yM3VzqDi?cache_control=3600" alt="CLIC DEVIS" className="h-16 sm:h-20" />
+      <img src="https://www.genspark.ai/api/files/s/IUxTlSyH?cache_control=3600" alt="CLIC DEVIS" className="h-16 sm:h-20" />
     </div>
     
     {/* Headline sobre */}
