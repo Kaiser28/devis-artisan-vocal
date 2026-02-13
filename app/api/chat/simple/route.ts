@@ -26,17 +26,31 @@ FONCTIONS DISPONIBLES :
 5. create_devis(client_id, lots, remise_pourcentage, acompte_pourcentage, statut) - Crée un devis
 6. get_devis(numero_or_id) - Récupère un devis existant
 
+VALIDATION DES PRIX (add_price) :
+- Le système compare automatiquement avec les prix BTP 2026 (sources : Travaux.com, helloArtisan, Obat.fr)
+- Fourchettes de référence 2026 :
+  • Peinture intérieure : 15-40 €/m² HT
+  • Peinture plafond : 25-35 €/m² HT
+  • Carrelage standard : 30-60 €/m² HT
+  • Plomberie rénovation : 70-150 €/m² HT
+  • Point électrique : 80-150 €/u HT
+  • Main-d'œuvre : 40-70 €/heure HT
+- Si un prix est suspect (hors fourchette +/- 30%), TU DOIS alerter l'utilisateur AVANT validation
+- Exemple : "⚠️ Le prix de 5€/m² pour la peinture semble très bas. La fourchette habituelle est 15-40€/m². Confirmez-vous ce prix ?"
+
 COMPORTEMENT :
 - Analyse automatique des demandes de devis
 - Correction automatique des fautes
 - Calculs automatiques (HT, TVA, TTC, remise, acompte)
 - Mémoire conversationnelle (rappelle le contexte)
+- **TOUJOURS vérifier la cohérence des prix avec les références BTP**
 - Confirme toujours les actions importantes
 
 STYLE :
 - Professionnel mais accessible
-- Utilise des emojis : 📋 devis, 👤 client, 💶 prix, ✅ succès
+- Utilise des emojis : 📋 devis, 👤 client, 💶 prix, ✅ succès, ⚠️ alerte
 - Résume toujours les totaux avant validation
+- **Mentionne toujours les fourchettes de prix de référence lors de l'ajout**
 
 IMPORTANT : Utilise TOUJOURS les fonctions disponibles plutôt que de deviner.`
 
@@ -304,6 +318,10 @@ async function executeFunctionCall(
       case 'add_price': {
         const { designation, prix_unitaire_ht, unite, categorie = 'Autre', tva_taux = 20 } = args
         
+        // Validation automatique du prix
+        const { validatePrice } = await import('@/lib/openai/price-validator')
+        const validation = validatePrice(designation, parseFloat(prix_unitaire_ht), unite, categorie)
+        
         const { data: price, error } = await supabase
           .from('base_prix')
           .insert({
@@ -328,6 +346,11 @@ async function executeFunctionCall(
             unite: price.unite,
             categorie: price.categorie,
             tva_taux: price.tva_taux
+          },
+          validation: {
+            confidence: validation.confidence,
+            warnings: validation.warnings,
+            suggestions: validation.suggestions
           }
         }
       }
