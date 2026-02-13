@@ -9,6 +9,7 @@ interface QuotaData {
   devis_remaining: number
   user_id: string
   email: string
+  stripe_customer_id?: string | null
 }
 
 export default function SubscriptionStatus() {
@@ -59,15 +60,27 @@ export default function SubscriptionStatus() {
   return (
     <div className="space-y-4">
       {/* Badge statut */}
-      {data.status === 'trialing' && (
+      {data.status === 'trialing' && !data.stripe_customer_id && (
+        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-6 text-white">
+          <h3 className="text-xl font-bold mb-2">⚠️ Carte bancaire requise</h3>
+          <p className="text-yellow-100 text-lg">
+            Vous devez entrer votre carte bancaire pour activer l'essai gratuit
+          </p>
+          <p className="text-yellow-200 text-sm mt-2">
+            🔒 Aucun prélèvement ne sera effectué pendant 7 jours. Vous pourrez annuler à tout moment.
+          </p>
+        </div>
+      )}
+
+      {data.status === 'trialing' && data.stripe_customer_id && (
         <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
-          <h3 className="text-xl font-bold mb-2">🎁 Période d'essai gratuite</h3>
+          <h3 className="text-xl font-bold mb-2">🎁 Période d'essai gratuite active</h3>
           <p className="text-indigo-100 text-lg">
             {daysRemaining !== null && daysRemaining > 0 
               ? `Plus que ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}`
               : 'Votre essai expire aujourd\'hui'}
           </p>
-          <p className="text-indigo-200 text-sm mt-2">Accès illimité pendant la période d'essai</p>
+          <p className="text-indigo-200 text-sm mt-2">Accès illimité pendant la période d'essai • Carte enregistrée ✅</p>
         </div>
       )}
 

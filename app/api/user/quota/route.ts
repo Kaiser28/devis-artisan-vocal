@@ -28,6 +28,13 @@ export async function GET() {
       )
     }
 
+    // Récupérer stripe_customer_id séparément
+    const { data: subData } = await supabase
+      .from('user_subscriptions')
+      .select('stripe_customer_id')
+      .eq('user_id', user.id)
+      .single()
+
     // Si aucune donnée (pas d'abonnement), retourner valeurs par défaut
     if (!data) {
       return NextResponse.json({
@@ -36,7 +43,8 @@ export async function GET() {
         trial_ends_at: null,
         devis_remaining: 0,
         user_id: user.id,
-        email: user.email
+        email: user.email,
+        stripe_customer_id: null
       })
     }
 
@@ -47,7 +55,8 @@ export async function GET() {
       trial_ends_at: (data as any).trial_ends_at,
       devis_remaining: (data as any).devis_remaining,
       user_id: user.id,
-      email: user.email
+      email: user.email,
+      stripe_customer_id: subData?.stripe_customer_id || null
     })
 
   } catch (err) {

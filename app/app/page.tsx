@@ -16,11 +16,12 @@ export default async function AppPage() {
   // Récupérer le statut d'abonnement (server-side)
   const { data: subscription } = await supabase
     .from('user_subscriptions')
-    .select('status')
+    .select('status, stripe_customer_id')
     .eq('user_id', user.id)
     .single()
 
   const hasActiveSubscription = subscription && ['trialing', 'active'].includes(subscription.status)
+  const hasStripeCustomer = subscription?.stripe_customer_id != null
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 p-8">
@@ -69,7 +70,7 @@ export default async function AppPage() {
           <SubscriptionStatus />
           
           <div className="mt-6">
-            {hasActiveSubscription ? (
+            {hasActiveSubscription && hasStripeCustomer ? (
               <ManageSubscriptionButton />
             ) : (
               <SubscribeButton />

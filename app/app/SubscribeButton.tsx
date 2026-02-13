@@ -47,7 +47,7 @@ export default function SubscribeButton() {
           </>
         ) : (
           <>
-            🚀 Commencer l'essai gratuit (7 jours)
+            💳 Entrer ma carte bancaire pour l'essai gratuit
           </>
         )}
       </button>
@@ -57,7 +57,7 @@ export default function SubscribeButton() {
       )}
 
       <p className="mt-4 text-xs text-center text-gray-500">
-        29,99€/mois après l'essai • Annulation à tout moment
+        🔒 Aucun prélèvement pendant 7 jours • 29,99€/mois après l'essai • Annulation à tout moment
       </p>
     </div>
   )
