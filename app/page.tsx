@@ -12,6 +12,11 @@ export default function LandingPage() {
   <div className="absolute inset-0 bg-black opacity-5"></div>
   
   <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+    {/* Logo CLIC DEVIS */}
+    <div className="flex justify-center mb-8">
+      <img src="https://www.genspark.ai/api/files/s/yM3VzqDi?cache_control=3600" alt="CLIC DEVIS" className="h-16 sm:h-20" />
+    </div>
+    
     {/* Headline sobre */}
     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-center leading-tight mb-6">
       Récupérez 15 heures par semaine
@@ -152,8 +157,8 @@ export default function LandingPage() {
     </h2>
 
     <div className="grid md:grid-cols-2 gap-8 mb-12">
-      <div className="bg-white bg-opacity-5 rounded-xl p-6 border border-slate-700">
-        <h3 className="text-xl font-semibold mb-4">Sans CLIC DEVIS</h3>
+      <div className="bg-slate-800 rounded-xl p-6 border border-slate-600">
+        <h3 className="text-xl font-semibold mb-4 text-white">Sans CLIC DEVIS</h3>
         <ul className="text-left space-y-2 text-slate-300 text-sm">
           <li>• 15h/semaine sur l'administratif</li>
           <li>• Clients perdus par lenteur</li>
@@ -162,8 +167,8 @@ export default function LandingPage() {
         </ul>
       </div>
 
-      <div className="bg-white bg-opacity-10 rounded-xl p-6 border border-slate-600">
-        <h3 className="text-xl font-semibold mb-4">Avec CLIC DEVIS</h3>
+      <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-6 border border-blue-500 shadow-lg">
+        <h3 className="text-xl font-semibold mb-4 text-white">Avec CLIC DEVIS</h3>
         <ul className="text-left space-y-2 text-white text-sm">
           <li>• 15h/semaine récupérées</li>
           <li>• Réponse rapide = plus de clients</li>
