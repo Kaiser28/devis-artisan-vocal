@@ -12,9 +12,18 @@ export default function LandingPage() {
   <div className="absolute inset-0 bg-black opacity-5"></div>
   
   <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
-    {/* Logo CLIC DEVIS */}
+    {/* Logo CLIC DEVIS - SVG inline pour visibilité garantie */}
     <div className="flex justify-center mb-8">
-      <img src="https://www.genspark.ai/api/files/s/IUxTlSyH?cache_control=3600" alt="CLIC DEVIS" className="h-16 sm:h-20" />
+      <div className="flex items-center gap-3">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Document icon */}
+          <rect x="8" y="4" width="24" height="32" rx="2" fill="white" opacity="0.9"/>
+          <path d="M12 12h16M12 18h16M12 24h12" stroke="#1e293b" strokeWidth="2" strokeLinecap="round"/>
+          {/* Cursor pointer */}
+          <path d="M22 22l6 6-2 2-4-4-2 4-2-6 6-2z" fill="#3b82f6"/>
+        </svg>
+        <span className="text-3xl sm:text-4xl font-bold text-white tracking-tight">CLIC DEVIS</span>
+      </div>
     </div>
     
     {/* Headline sobre */}
