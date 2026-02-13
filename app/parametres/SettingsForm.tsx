@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import LogoUpload from './LogoUpload'
+import SubscriptionCard from './SubscriptionCard'
 
 interface Settings {
   raison_sociale: string
@@ -108,6 +109,9 @@ export default function SettingsForm() {
           {message.text}
         </div>
       )}
+
+      {/* Section abonnement */}
+      <SubscriptionCard />
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Section 1 : Informations entreprise */}
