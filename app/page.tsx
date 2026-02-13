@@ -2,8 +2,8 @@ export default function LandingPage() {
   return (
     <html lang="fr">
       <head>
-        <title>Récupérez 15h par semaine grâce à l'IA | Sferia</title>
-        <meta name="description" content="Artisan BTP à 500k€+ de CA ? Arrêtez de perdre 15h/semaine sur les devis. L'IA prend le relais. 7 jours gratuits." />
+        <title>Récupérez 15h par semaine grâce à l'IA | CLIC DEVIS</title>
+        <meta name="description" content="Artisan BTP à 500k€+ de CA ? Arrêtez de perdre 15h/semaine sur les devis. L'IA prend le relais. CLIC DEVIS - 7 jours gratuits." />
       </head>
       <body className="bg-white text-gray-900">
 
@@ -115,7 +115,7 @@ export default function LandingPage() {
       </div>
 
       <div className="bg-slate-50 rounded-xl p-8 mb-8">
-        <h3 className="text-xl font-semibold mb-6 text-center text-gray-900">Avec Sferia</h3>
+        <h3 className="text-xl font-semibold mb-6 text-center text-gray-900">Avec CLIC DEVIS</h3>
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           <div className="text-center">
             <p className="text-sm text-slate-600 mb-2">Investissement</p>
@@ -153,7 +153,7 @@ export default function LandingPage() {
 
     <div className="grid md:grid-cols-2 gap-8 mb-12">
       <div className="bg-white bg-opacity-5 rounded-xl p-6 border border-slate-700">
-        <h3 className="text-xl font-semibold mb-4">Sans Sferia</h3>
+        <h3 className="text-xl font-semibold mb-4">Sans CLIC DEVIS</h3>
         <ul className="text-left space-y-2 text-slate-300 text-sm">
           <li>• 15h/semaine sur l'administratif</li>
           <li>• Clients perdus par lenteur</li>
@@ -163,7 +163,7 @@ export default function LandingPage() {
       </div>
 
       <div className="bg-white bg-opacity-10 rounded-xl p-6 border border-slate-600">
-        <h3 className="text-xl font-semibold mb-4">Avec Sferia</h3>
+        <h3 className="text-xl font-semibold mb-4">Avec CLIC DEVIS</h3>
         <ul className="text-left space-y-2 text-white text-sm">
           <li>• 15h/semaine récupérées</li>
           <li>• Réponse rapide = plus de clients</li>
@@ -188,7 +188,7 @@ export default function LandingPage() {
   <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
     <div className="grid md:grid-cols-4 gap-8 mb-8">
       <div>
-        <h3 className="text-white font-semibold text-lg mb-4">Sferia</h3>
+        <h3 className="text-white font-semibold text-lg mb-4">CLIC DEVIS</h3>
         <p className="text-sm">Automatisation IA pour artisans BTP</p>
       </div>
       <div>
@@ -214,7 +214,7 @@ export default function LandingPage() {
       </div>
     </div>
     <div className="border-t border-slate-800 pt-8 text-center text-sm">
-      <p>&copy; 2026 Sferia - Voisins-le-Bretonneux</p>
+      <p>&copy; 2026 CLIC DEVIS - Voisins-le-Bretonneux</p>
     </div>
   </div>
 </footer>
