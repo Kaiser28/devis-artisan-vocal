@@ -208,6 +208,204 @@ async function executeFunctionCall(
         }
       }
 
+      case 'create_client': {
+        const { nom, prenom, email, telephone, ville, adresse, code_postal, siret, notes } = args
+
+        // Validation : email OU telephone requis
+        if (!email && !telephone) {
+          return {
+            success: false,
+            error: 'Email ou téléphone obligatoire pour créer un client'
+          }
+        }
+
+        // Créer client
+        const { data: client, error: insertError } = await supabase
+          .from('clients')
+          .insert({
+            user_id: userId,
+            nom: nom || '',
+            prenom: prenom || '',
+            email: email || null,
+            telephone: telephone || null,
+            ville: ville || null,
+            adresse: adresse || null,
+            code_postal: code_postal || null,
+            siret: siret || null,
+            notes: notes || null
+          })
+          .select()
+          .single()
+
+        if (insertError) {
+          // Doublon email
+          if (insertError.code === '23505') {
+            return {
+              success: false,
+              error: `Un client avec l'email ${email} existe déjà`
+            }
+          }
+          throw insertError
+        }
+
+        return {
+          success: true,
+          client: {
+            id: client.id,
+            nom: client.nom,
+            prenom: client.prenom,
+            email: client.email,
+            telephone: client.telephone,
+            ville: client.ville
+          },
+          message: `✅ Client ${prenom} ${nom} créé (${ville || 'ville non renseignée'}, #${client.id.substring(0, 8)})`
+        }
+      }
+
+      case 'check_duplicate_client': {
+        const { name, city } = args
+        
+        const searchPattern = `%${name.trim().toLowerCase()}%`
+        
+        let query = supabase
+          .from('clients')
+          .select('id, nom, prenom, email, telephone, ville, adresse, code_postal')
+          .eq('user_id', userId)
+          .or(`nom.ilike.${searchPattern},prenom.ilike.${searchPattern}`)
+
+        if (city && city.trim().length > 0) {
+          const cityPattern = `%${city.trim().toLowerCase()}%`
+          query = query.ilike('ville', cityPattern)
+        }
+
+        const { data: clients, error } = await query.limit(10)
+
+        if (error) throw error
+
+        return {
+          success: true,
+          duplicates: clients || [],
+          count: clients?.length || 0,
+          query: { name, city }
+        }
+      }
+
+      case 'create_price': {
+        const { designation, unite, prix_unitaire_ht, tva_taux = 20, categorie, fournisseur, notes } = args
+
+        // Validation
+        if (!designation || !unite || prix_unitaire_ht === undefined) {
+          return {
+            success: false,
+            error: 'Désignation, unité et prix unitaire obligatoires'
+          }
+        }
+
+        const { data: price, error: insertError } = await supabase
+          .from('base_prix')
+          .insert({
+            user_id: userId,
+            designation,
+            unite,
+            prix_unitaire_ht: parseFloat(prix_unitaire_ht),
+            tva_taux: parseFloat(tva_taux),
+            categorie: categorie || null,
+            fournisseur: fournisseur || null,
+            notes: notes || null,
+            source: 'ai_chat',
+            usage_count: 0
+          })
+          .select()
+          .single()
+
+        if (insertError) throw insertError
+
+        return {
+          success: true,
+          price: {
+            id: price.id,
+            designation: price.designation,
+            unite: price.unite,
+            prix_unitaire_ht: price.prix_unitaire_ht,
+            tva_taux: price.tva_taux
+          },
+          message: `✅ Prix ajouté : ${designation} - ${prix_unitaire_ht}€/${unite} (TVA ${tva_taux}%)`
+        }
+      }
+
+      case 'update_devis': {
+        const { devis_id, lots, remise_pourcentage, acompte_pourcentage, statut } = args
+
+        // Récupérer devis actuel
+        const { data: currentDevis, error: fetchError } = await supabase
+          .from('devis')
+          .select('*')
+          .eq('id', devis_id)
+          .eq('user_id', userId)
+          .single()
+
+        if (fetchError || !currentDevis) {
+          return {
+            success: false,
+            error: 'Devis non trouvé'
+          }
+        }
+
+        // Fusionner lots
+        const updatedLots = lots || currentDevis.lots
+
+        // Recalcul totaux
+        let total_ht = 0
+        const lotsWithTotals = updatedLots.map((lot: any) => {
+          const total_ht_ligne = lot.quantite * lot.prix_unitaire_ht
+          total_ht += total_ht_ligne
+          return { ...lot, total_ht: parseFloat(total_ht_ligne.toFixed(2)) }
+        })
+
+        const remise_pct = remise_pourcentage ?? currentDevis.remise_pourcentage ?? 0
+        const acompte_pct = acompte_pourcentage ?? currentDevis.acompte_pourcentage ?? 0
+        const remise_montant = parseFloat(((total_ht * remise_pct) / 100).toFixed(2))
+        const total_ht_apres_remise = parseFloat((total_ht - remise_montant).toFixed(2))
+        
+        const tva_taux = lotsWithTotals[0]?.tva_taux || 20
+        const tva_montant = parseFloat((total_ht_apres_remise * tva_taux / 100).toFixed(2))
+        const total_ttc = parseFloat((total_ht_apres_remise + tva_montant).toFixed(2))
+        const acompte_montant = parseFloat((total_ttc * acompte_pct / 100).toFixed(2))
+
+        // Update
+        const { data: updatedDevis, error: updateError } = await supabase
+          .from('devis')
+          .update({
+            lots: lotsWithTotals,
+            total_ht: parseFloat(total_ht.toFixed(2)),
+            tva_montant,
+            total_ttc,
+            remise_pourcentage: remise_pct,
+            remise_montant,
+            acompte_pourcentage: acompte_pct,
+            acompte_montant,
+            statut: statut || currentDevis.statut,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', devis_id)
+          .eq('user_id', userId)
+          .select()
+          .single()
+
+        if (updateError) throw updateError
+
+        return {
+          success: true,
+          devis: {
+            id: updatedDevis.id,
+            numero: updatedDevis.numero,
+            total_ttc: updatedDevis.total_ttc,
+            lots: updatedDevis.lots
+          },
+          message: `✅ Devis ${updatedDevis.numero} mis à jour`
+        }
+      }
+
       case 'send_devis_email': {
         // TODO: Implémenter envoi email + PDF
         return {

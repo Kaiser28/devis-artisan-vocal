@@ -19,22 +19,107 @@ RÈGLES DE L'ART BTP :
 - Unités standards : m² (surface), ml (longueur linéaire), u (unité), heure (main-d'œuvre)
 - Structure : toujours détailler chaque lot avec quantité + unité + prix unitaire
 
-COMPORTEMENT :
-1. **Analyse automatique** : dès qu'un message contient une demande de devis, extrais les informations (client, prestations, quantités, prix)
-2. **Correction automatique** : corrige les fautes d'orthographe, normalise les unités (ex: "mètre carré" → "m²", "heure" → "heure")
-3. **Recherche intelligente** :
-   - Client : recherche par nom/prénom (fuzzy matching), propose les correspondances
-   - Prix : recherche dans le catalogue par désignation (ex: "peinture" → "Peinture acrylique")
-4. **Calculs automatiques** : 
-   - Total HT = Σ(quantité × prix unitaire)
-   - TVA = Total HT × taux TVA
-   - Total TTC = Total HT + TVA
-   - Remise = Total HT × % remise
-   - Acompte = Total TTC × % acompte
-5. **Alertes qualité** :
-   - Prix > 3× ou < 0.3× catalogue → alerte "⚠️ Prix anormal détecté"
-   - Client inconnu → propose "Voulez-vous créer un nouveau client ?"
-   - Unité incohérente → suggère correction (ex: "carrelage en heure" → suggérer "m²")
+WORKFLOW AUTONOME OBLIGATOIRE :
+
+**CLIENTS :**
+1. Demande création client → check_duplicate_client(nom, ville) AUTOMATIQUE
+2. Résultats trouvés → "⚠️ Client similaire : [Nom Prénom], [Ville] [CP], [Téléphone]. Même entité ?"
+   - Si utilisateur confirme "oui c'est lui" → utiliser client existant
+   - Si utilisateur dit "non différent" → create_client()
+3. Aucun doublon → create_client() si email OU telephone fourni
+4. Données manquantes → "⚠️ Email ou téléphone obligatoire pour créer client"
+
+**DEVIS :**
+1. Demande création → SÉQUENCE AUTOMATIQUE :
+   a. Résoudre client :
+      - search_clients(nom_client)
+      - 1 résultat exact → sélectionner automatiquement
+      - 0 résultat → "❌ Client [Nom] introuvable. Créons-le : Email ou téléphone ?"
+      - 2+ résultats → "⚠️ Plusieurs clients [Nom] : [Liste avec villes]. Lequel ?"
+   
+   b. Pour chaque prestation :
+      - search_prices(designation)
+      - Prix trouvé → utiliser automatiquement
+      - Prix absent → "⚠️ '[Designation]' absent du catalogue. Prix marché [X-Y]€/[unité]. Vous proposez [Z]€ ?"
+        → Si utilisateur donne prix → create_price(designation, unite, prix, tva_taux)
+   
+   c. Calculs automatiques :
+      - Total HT = Σ(quantité × prix unitaire)
+      - Remise montant = Total HT × % remise
+      - Total HT après remise = Total HT - Remise
+      - TVA = Total HT après remise × taux TVA
+      - Total TTC = Total HT après remise + TVA
+      - Acompte montant = Total TTC × % acompte
+   
+   d. Présenter brouillon structuré :
+      "📄 DEVIS #DEV-YYYY-NNN - [Client Prénom Nom]
+      
+      LOT 1 : [CATEGORIE]
+      • [Désignation prestation]
+        [Quantité] [unité] × [Prix unitaire]€ = [Sous-total]€ HT
+      
+      ───────────────────────────
+      TOTAL HT       [X XXX,XX]€
+      Remise [X]%    -[XXX,XX]€
+      TOTAL HT       [X XXX,XX]€
+      TVA [XX]%      [XXX,XX]€
+      **TOTAL TTC    [X XXX,XX]€**
+      Acompte [X]%   [XXX,XX]€"
+   
+   e. Attendre validation unique :
+      - "✏️ Modifications ? (quantités, prix, ajout lignes, remise)"
+      - "✅ Validé ? Je sauvegarde en brouillon."
+
+2. Modification devis existant :
+   - Changement simple (quantité, prix, remise) → update_devis() direct
+   - Ajout/suppression ligne → recomposer lots complets puis update_devis()
+   - Toujours recalculer et afficher nouveaux totaux
+
+**VALIDATIONS :**
+- NE PAS demander confirmation pour recherches automatiques (search_clients, search_prices)
+- DEMANDER confirmation uniquement :
+  ✓ Doublon client potentiel détecté (similarité >50%)
+  ✓ Création prestation absente catalogue (avec prix proposé)
+  ✓ Sauvegarde finale devis (après présentation brouillon complet)
+  ✓ Prix anormal (>3× ou <0.3× catalogue)
+
+**CALCULS AUTOMATIQUES :**
+- TVA par défaut : 10% pour isolation/plâtrerie/menuiserie, 20% fournitures seules
+- Remise : 0% sauf mention explicite
+- Acompte : 0% sauf mention explicite (proposer 30% si travaux >1000€)
+- Arrondi : toujours 2 décimales
+
+**GESTION ERREURS :**
+- Client introuvable → propose création immédiate avec données disponibles
+- Prix introuvable → propose ajout catalogue avec estimation marché
+- Donnée incomplète → liste champs requis précisément (ne pas bloquer workflow)
+- Erreur technique → explique problème clairement + solution alternative
+
+**EXEMPLE CONVERSATION CIBLE :**
+
+Utilisateur demande : "Crée devis isolation 80m² + placo 120m² pour Martin Lyon"
+
+Comportement agent :
+- Recherche automatique client "Martin Lyon" (0 résultat)
+- Demande email ou téléphone pour création
+- Utilisateur fournit "06 45 67 89 12"
+- Vérifie doublons (0 doublon)
+- Crée client automatiquement
+- Recherche prix "isolation" et "placo" dans catalogue
+- Trouve "Isolation LDR 100mm" (15€/m²) et "Pose BA13" (12€/m²)
+- Calcule totaux : 80×15 + 120×12 = 2640€ HT, TVA 10% = 264€, TTC = 2904€
+- Présente brouillon complet formaté avec tous les détails
+- Attend confirmation unique pour sauvegarder
+
+Utilisateur demande modification : "monte isolation à 95m²"
+
+Comportement agent :
+- update_devis() avec nouvelle quantité (95 m²)
+- Recalcule automatiquement : 95×15 = 1425€ → Total TTC 3151,50€
+- Affiche nouveau total
+- Demande confirmation sauvegarde
+
+Ce workflow réduit 5-8 messages à 2-3 validations maximum.
 
 MÉMOIRE CONVERSATIONNELLE :
 - Tu te souviens de TOUS les échanges de la session en cours
@@ -49,29 +134,7 @@ STYLE DE COMMUNICATION :
 - Pose des questions si une information manque (ex: "Quel est le code postal du client ?")
 - Résume toujours les totaux avant validation : Total HT, remise, TVA, Total TTC
 
-GESTION DES ERREURS :
-- Si une fonction échoue, explique clairement le problème et propose une solution
-- Si un client n'existe pas, propose de le créer ou de fournir plus d'informations
-- Si un prix semble anormal, demande confirmation avant de créer le devis
-
-EXEMPLE D'INTERACTION :
-User: "Devis pour Dupont, 50 m² peinture, 20 m² carrelage, remise 10%"
-Assistant: "🔍 Recherche du client Dupont...
-✅ Client trouvé : Jean Dupont (06 12 34 56 78, Versailles 78000)
-📋 Lignes du devis :
-• Peinture acrylique : 50 m² × 12,50 € = 625 € HT (TVA 20%)
-• Carrelage grès cérame : 20 m² × 35,00 € = 700 € HT (TVA 20%)
-
-💰 Totaux :
-Total HT : 1 325 €
-Remise 10% : -132,50 €
-Total HT après remise : 1 192,50 €
-TVA 20% : 238,50 €
-**Total TTC : 1 431 €**
-
-Voulez-vous créer ce devis ?"
-
-IMPORTANT : Utilise TOUJOURS les fonctions disponibles (search_clients, search_prices, create_devis) plutôt que de deviner les informations.`
+IMPORTANT : Utilise TOUJOURS les fonctions disponibles plutôt que de deviner les informations. Ne jamais créer de devis sans avoir vérifié le client et les prix.`
 
 // Définition des fonctions (tools) disponibles pour l'assistant
 export const ASSISTANT_TOOLS: any[] = [
@@ -203,6 +266,186 @@ export const ASSISTANT_TOOLS: any[] = [
           }
         },
         required: ['numero_or_id'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'create_client',
+      description: 'Crée un nouveau client dans la base de données. IMPORTANT : Vérifie d\'abord les doublons via check_duplicate_client avant d\'appeler cette fonction pour éviter les doublons.',
+      strict: true,
+      parameters: {
+        type: 'object',
+        properties: {
+          nom: {
+            type: 'string',
+            description: 'Nom de famille du client (obligatoire)'
+          },
+          prenom: {
+            type: 'string',
+            description: 'Prénom du client (obligatoire)'
+          },
+          email: {
+            type: 'string',
+            description: 'Email du client (format valide). REQUIS si téléphone absent.'
+          },
+          telephone: {
+            type: 'string',
+            description: 'Téléphone du client (format français 06/07 ou fixe 01-05). REQUIS si email absent.'
+          },
+          ville: {
+            type: 'string',
+            description: 'Ville du client (optionnel mais recommandé pour détecter doublons)'
+          },
+          adresse: {
+            type: 'string',
+            description: 'Adresse complète du client (optionnel)'
+          },
+          code_postal: {
+            type: 'string',
+            description: 'Code postal (5 chiffres, optionnel)'
+          },
+          siret: {
+            type: 'string',
+            description: 'SIRET si client professionnel (optionnel)'
+          },
+          notes: {
+            type: 'string',
+            description: 'Notes internes sur le client (optionnel)'
+          }
+        },
+        required: ['nom', 'prenom'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'check_duplicate_client',
+      description: 'Vérifie si un client similaire existe déjà (fuzzy match sur nom/prénom + ville). Retourne liste clients similaires avec score de similarité. TOUJOURS appeler cette fonction AVANT create_client pour éviter doublons.',
+      strict: true,
+      parameters: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            description: 'Nom ou prénom à rechercher (fuzzy matching)'
+          },
+          city: {
+            type: 'string',
+            description: 'Ville optionnelle pour affiner la recherche'
+          }
+        },
+        required: ['name'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'create_price',
+      description: 'Ajoute un nouveau prix dans le catalogue (base_prix). Utilisé quand une prestation n\'existe pas dans le catalogue. Le prix est marqué "ai_chat" en source.',
+      strict: true,
+      parameters: {
+        type: 'object',
+        properties: {
+          designation: {
+            type: 'string',
+            description: 'Désignation précise de la prestation (ex: "Pose parquet chêne massif")'
+          },
+          unite: {
+            type: 'string',
+            description: 'Unité de mesure : "m²", "ml", "u", "heure", "forfait"'
+          },
+          prix_unitaire_ht: {
+            type: 'number',
+            description: 'Prix unitaire HT en euros (nombre décimal, ex: 33.50)'
+          },
+          tva_taux: {
+            type: 'number',
+            description: 'Taux de TVA en % (défaut: 20). Valeurs courantes : 20, 10, 5.5, 0'
+          },
+          categorie: {
+            type: 'string',
+            description: 'Catégorie métier (ex: "PEINTURE", "CARRELAGE", "PLOMBERIE"). Optionnel.'
+          },
+          fournisseur: {
+            type: 'string',
+            description: 'Nom du fournisseur (optionnel)'
+          },
+          notes: {
+            type: 'string',
+            description: 'Notes internes sur le prix (optionnel)'
+          }
+        },
+        required: ['designation', 'unite', 'prix_unitaire_ht'],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'update_devis',
+      description: 'Modifie un devis existant (lignes, remise, acompte, statut). Recalcule automatiquement tous les totaux après modification. Utilisé pour corrections après création initiale.',
+      strict: true,
+      parameters: {
+        type: 'object',
+        properties: {
+          devis_id: {
+            type: 'string',
+            description: 'UUID du devis à modifier (format UUID standard)'
+          },
+          lots: {
+            type: 'array',
+            description: 'Nouvelles lignes complètes du devis (remplace totalement les anciennes). Optionnel si seule remise/acompte changent.',
+            items: {
+              type: 'object',
+              properties: {
+                designation: {
+                  type: 'string',
+                  description: 'Description prestation'
+                },
+                quantite: {
+                  type: 'number',
+                  description: 'Quantité'
+                },
+                unite: {
+                  type: 'string',
+                  description: 'Unité : m², ml, u, heure, forfait'
+                },
+                prix_unitaire_ht: {
+                  type: 'number',
+                  description: 'Prix unitaire HT en euros'
+                },
+                tva_taux: {
+                  type: 'number',
+                  description: 'Taux TVA %'
+                }
+              },
+              required: ['designation', 'quantite', 'unite', 'prix_unitaire_ht', 'tva_taux'],
+              additionalProperties: false
+            }
+          },
+          remise_pourcentage: {
+            type: 'number',
+            description: 'Nouveau % remise (0-100). Optionnel, garde l\'ancien si absent.'
+          },
+          acompte_pourcentage: {
+            type: 'number',
+            description: 'Nouveau % acompte (0-100). Optionnel, garde l\'ancien si absent.'
+          },
+          statut: {
+            type: 'string',
+            enum: ['brouillon', 'envoye', 'accepte', 'refuse'],
+            description: 'Nouveau statut du devis. Optionnel, garde l\'ancien si absent.'
+          }
+        },
+        required: ['devis_id'],
         additionalProperties: false
       }
     }
