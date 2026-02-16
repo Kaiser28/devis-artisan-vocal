@@ -106,7 +106,10 @@ export default function AutocompleteClient({ onSelect, selectedClient }: Autocom
       console.log('Search result:', result)
       
       // Vérifier la structure de la réponse
-      if (result && result.data && Array.isArray(result.data)) {
+      if (result && result.clients && Array.isArray(result.clients)) {
+        setResults(result.clients)
+        setIsOpen(true)
+      } else if (result && result.data && Array.isArray(result.data)) {
         setResults(result.data)
         setIsOpen(true)
       } else if (Array.isArray(result)) {
