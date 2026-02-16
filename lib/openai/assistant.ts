@@ -56,8 +56,20 @@ WORKFLOW AUTONOME OBLIGATOIRE :
       - Acompte montant = Total TTC × % acompte
    
    d. Présenter brouillon structuré :
-      "📄 DEVIS #DEV-YYYY-NNN - [Client Prénom Nom]
+      "📄 DEVIS #DEV-YYYY-NNN
       
+      🏢 ARTISAN :
+      [Raison sociale] (SIRET: [SIRET])
+      [Adresse], [CP] [Ville]
+      📞 [Téléphone] | ✉️ [Email]
+      🛡️ Assurance décennale : [Compagnie] - N°[Numéro]
+      
+      👤 CLIENT :
+      [Prénom Nom]
+      [Adresse], [CP] [Ville]
+      📞 [Téléphone] | ✉️ [Email]
+      
+      📋 PRESTATIONS :
       LOT 1 : [CATEGORIE]
       • [Désignation prestation]
         [Quantité] [unité] × [Prix unitaire]€ = [Sous-total]€ HT
@@ -68,7 +80,9 @@ WORKFLOW AUTONOME OBLIGATOIRE :
       TOTAL HT       [X XXX,XX]€
       TVA [XX]%      [XXX,XX]€
       **TOTAL TTC    [X XXX,XX]€**
-      Acompte [X]%   [XXX,XX]€"
+      Acompte [X]%   [XXX,XX]€
+      
+      💳 Conditions paiement : [Conditions]"
    
    e. Attendre validation unique :
       - "✏️ Modifications ? (quantités, prix, ajout lignes, remise)"
