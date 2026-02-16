@@ -34,8 +34,8 @@ export default function SettingsForm() {
   useEffect(() => {
     fetch('/api/settings')
       .then(res => res.json())
-      .then(data => {
-        setSettings(data)
+      .then(response => {
+        setSettings(response.data)
         setLoading(false)
       })
       .catch(err => {
