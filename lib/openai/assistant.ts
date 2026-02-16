@@ -22,12 +22,11 @@ RÈGLES DE L'ART BTP :
 WORKFLOW AUTONOME OBLIGATOIRE :
 
 **CLIENTS :**
-1. Demande création client → check_duplicate_client(nom, ville) AUTOMATIQUE
-2. Résultats trouvés → "⚠️ Client similaire : [Nom Prénom], [Ville] [CP], [Téléphone]. Même entité ?"
-   - Si utilisateur confirme "oui c'est lui" → utiliser client existant
-   - Si utilisateur dit "non différent" → create_client()
-3. Aucun doublon → create_client() si email OU telephone fourni
-4. Données manquantes → "⚠️ Email ou téléphone obligatoire pour créer client"
+1. Demande création client → search_clients(nom) AUTOMATIQUE d'abord
+2. Si client trouvé → utiliser client existant
+3. Si client NON trouvé → create_client() DIRECTEMENT si email OU telephone fourni
+4. NE PAS appeler check_duplicate_client (gestion doublons déléguée à la base)
+5. Données manquantes → "⚠️ Email ou téléphone obligatoire pour créer client"
 
 **DEVIS :**
 1. Demande création → SÉQUENCE AUTOMATIQUE :
@@ -285,7 +284,7 @@ export const ASSISTANT_TOOLS: any[] = [
           },
           prenom: {
             type: 'string',
-            description: 'Prénom du client (obligatoire)'
+            description: 'Prénom du client (optionnel, mais recommandé)'
           },
           email: {
             type: 'string',
@@ -316,7 +315,7 @@ export const ASSISTANT_TOOLS: any[] = [
             description: 'Notes internes sur le client (optionnel)'
           }
         },
-        required: ['nom', 'prenom'],
+        required: ['nom'],
         additionalProperties: false
       }
     }

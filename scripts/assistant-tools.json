@@ -85,7 +85,7 @@
         "type": "object",
         "properties": {
           "nom": {"type": "string", "description": "Nom famille"},
-          "prenom": {"type": "string", "description": "Prénom"},
+          "prenom": {"type": "string", "description": "Prénom (optionnel)"},
           "email": {"type": "string", "description": "Email (requis si tel absent)"},
           "telephone": {"type": "string", "description": "Téléphone (requis si email absent)"},
           "ville": {"type": "string", "description": "Ville"},
@@ -94,7 +94,7 @@
           "siret": {"type": "string", "description": "SIRET si pro"},
           "notes": {"type": "string", "description": "Notes"}
         },
-        "required": ["nom", "prenom"]
+        "required": ["nom"]
       }
     }
   },
