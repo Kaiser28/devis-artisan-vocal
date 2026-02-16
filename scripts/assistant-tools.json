@@ -1,0 +1,183 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_clients",
+      "description": "Recherche clients par nom/prénom/téléphone/ville",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string", "description": "Texte recherche"},
+          "limit": {"type": "number", "description": "Nb max résultats (défaut 5, max 20)"}
+        },
+        "required": ["query", "limit"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_prices",
+      "description": "Recherche prix catalogue par désignation/catégorie",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string", "description": "Désignation recherche"},
+          "limit": {"type": "number", "description": "Nb max résultats (défaut 10, max 50)"}
+        },
+        "required": ["query", "limit"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "create_devis",
+      "description": "Crée devis (génère numéro, calcule totaux). Vérifie client existe avant appel.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "client_id": {"type": "string", "description": "UUID client (via search_clients)"},
+          "lots": {
+            "type": "array",
+            "description": "Lignes devis (min 1, max 50)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "designation": {"type": "string", "description": "Description prestation"},
+                "quantite": {"type": "number", "description": "Quantité"},
+                "unite": {"type": "string", "description": "Unité : m², ml, u, heure, forfait"},
+                "prix_unitaire_ht": {"type": "number", "description": "Prix unitaire HT euros"},
+                "tva_taux": {"type": "number", "description": "Taux TVA % : 20, 10, 5.5, 0"}
+              },
+              "required": ["designation", "quantite", "unite", "prix_unitaire_ht", "tva_taux"]
+            }
+          },
+          "remise_pourcentage": {"type": "number", "description": "Remise % (défaut 0)"},
+          "acompte_pourcentage": {"type": "number", "description": "Acompte % TTC (défaut 0)"},
+          "conditions_paiement": {"type": "string", "description": "Conditions paiement"},
+          "statut": {"type": "string", "enum": ["brouillon", "envoye"], "description": "Statut devis"}
+        },
+        "required": ["client_id", "lots"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_devis",
+      "description": "Récupère devis par numéro (DEV-YYYY-XXX) ou UUID",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "numero_or_id": {"type": "string", "description": "Numéro devis ou UUID"}
+        },
+        "required": ["numero_or_id"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "create_client",
+      "description": "Crée client. IMPORTANT : Vérifier doublons via check_duplicate_client avant.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "nom": {"type": "string", "description": "Nom famille"},
+          "prenom": {"type": "string", "description": "Prénom"},
+          "email": {"type": "string", "description": "Email (requis si tel absent)"},
+          "telephone": {"type": "string", "description": "Téléphone (requis si email absent)"},
+          "ville": {"type": "string", "description": "Ville"},
+          "adresse": {"type": "string", "description": "Adresse"},
+          "code_postal": {"type": "string", "description": "Code postal"},
+          "siret": {"type": "string", "description": "SIRET si pro"},
+          "notes": {"type": "string", "description": "Notes"}
+        },
+        "required": ["nom", "prenom"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "check_duplicate_client",
+      "description": "Vérifie clients similaires (fuzzy match nom+ville). TOUJOURS appeler AVANT create_client.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string", "description": "Nom ou prénom recherche"},
+          "city": {"type": "string", "description": "Ville optionnelle"}
+        },
+        "required": ["name"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "create_price",
+      "description": "Ajoute prix catalogue. Utilisé quand prestation absente. Marqué 'ai_chat'.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "designation": {"type": "string", "description": "Désignation prestation"},
+          "unite": {"type": "string", "description": "Unité : m², ml, u, heure, forfait"},
+          "prix_unitaire_ht": {"type": "number", "description": "Prix unitaire HT euros"},
+          "tva_taux": {"type": "number", "description": "TVA % (défaut 20) : 20, 10, 5.5, 0"},
+          "categorie": {"type": "string", "description": "Catégorie métier"},
+          "fournisseur": {"type": "string", "description": "Fournisseur"},
+          "notes": {"type": "string", "description": "Notes"}
+        },
+        "required": ["designation", "unite", "prix_unitaire_ht"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "update_devis",
+      "description": "Modifie devis (lignes, remise, acompte, statut). Recalcule totaux auto.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "devis_id": {"type": "string", "description": "UUID devis"},
+          "lots": {
+            "type": "array",
+            "description": "Nouvelles lignes (remplace anciennes)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "designation": {"type": "string", "description": "Description"},
+                "quantite": {"type": "number", "description": "Quantité"},
+                "unite": {"type": "string", "description": "Unité"},
+                "prix_unitaire_ht": {"type": "number", "description": "Prix HT"},
+                "tva_taux": {"type": "number", "description": "TVA %"}
+              },
+              "required": ["designation", "quantite", "unite", "prix_unitaire_ht", "tva_taux"]
+            }
+          },
+          "remise_pourcentage": {"type": "number", "description": "Nouveau % remise (0-100)"},
+          "acompte_pourcentage": {"type": "number", "description": "Nouveau % acompte (0-100)"},
+          "statut": {"type": "string", "enum": ["brouillon", "envoye", "accepte", "refuse"], "description": "Nouveau statut"}
+        },
+        "required": ["devis_id"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "send_devis_email",
+      "description": "Envoie devis par email avec PDF. Statut passe à 'envoye' après envoi.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "devis_id": {"type": "string", "description": "UUID devis"},
+          "custom_message": {"type": "string", "description": "Message personnalisé"}
+        },
+        "required": ["devis_id"]
+      }
+    }
+  }
+]
