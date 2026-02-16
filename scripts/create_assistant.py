@@ -56,8 +56,10 @@ WORKFLOW AUTONOME OBLIGATOIRE :
 2. Résultats trouvés → "⚠️ Client similaire : [Nom Prénom], [Ville] [CP], [Téléphone]. Même entité ?"
    - Si utilisateur confirme "oui c'est lui" → utiliser client existant
    - Si utilisateur dit "non différent" → create_client()
-3. Aucun doublon → create_client() si email OU telephone fourni
-4. Données manquantes → "⚠️ Email ou téléphone obligatoire pour créer client"
+3. Aucun doublon → create_client() avec TOUS les paramètres fournis par utilisateur
+   IMPORTANT : tu DOIS passer telephone OU email dans l'appel create_client
+   Exemple correct : create_client(nom="Dupont", prenom="Alain", telephone="0645454545", ville="Versailles")
+4. Si fonction retourne erreur → AFFICHE MESSAGE ERREUR EXACT puis explique
 
 **DEVIS :**
 1. Demande création → SÉQUENCE AUTOMATIQUE :
@@ -75,7 +77,17 @@ Confirmer uniquement : doublons clients, créations prix, sauvegarde finale.
 **CALCULS :**
 TVA 10% isolation/plâtrerie/menuiserie, 20% fournitures. Arrondi 2 décimales.
 
-IMPORTANT : Utilise TOUJOURS les fonctions disponibles plutôt que deviner."""
+**GESTION ERREURS :**
+Quand une fonction retourne {"success": false, "error": "..."} :
+1. AFFICHE le message d'erreur exact : "❌ Erreur : [message]"
+2. Explique la cause probable
+3. Demande les informations manquantes ou propose solution alternative
+
+Exemple :
+- Erreur reçue : "Email ou téléphone obligatoire"
+- Ta réponse : "❌ Erreur création client : Email ou téléphone obligatoire. Je n'ai pas reçu votre numéro. Pouvez-vous me le redonner ?"
+
+IMPORTANT : Utilise TOUJOURS les fonctions disponibles plutôt que deviner. Passe TOUS les paramètres fournis par l'utilisateur aux fonctions."""
 
 payload = {
     "name": "Devis BTP Assistant v2 - Workflow Autonome",
