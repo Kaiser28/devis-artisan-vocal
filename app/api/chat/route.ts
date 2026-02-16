@@ -211,13 +211,21 @@ async function executeFunctionCall(
       case 'create_client': {
         const { nom, prenom, email, telephone, ville, adresse, code_postal, siret, notes } = args
 
+        // LOG AJOUTÉ
+        console.log('🔧 create_client appelé:', JSON.stringify({
+          nom, prenom, email, telephone, ville, adresse, code_postal
+        }, null, 2))
+
         // Validation : email OU telephone requis
         if (!email && !telephone) {
+          console.error('❌ Validation échec : email ET telephone absents')
           return {
             success: false,
             error: 'Email ou téléphone obligatoire pour créer un client'
           }
         }
+
+        console.log('✅ Validation OK, insertion Supabase...')
 
         // Créer client
         const { data: client, error: insertError } = await supabase
@@ -238,6 +246,14 @@ async function executeFunctionCall(
           .single()
 
         if (insertError) {
+          // LOG AJOUTÉ
+          console.error('❌ Erreur Supabase create_client:', {
+            code: insertError.code,
+            message: insertError.message,
+            details: insertError.details,
+            hint: insertError.hint
+          })
+
           // Doublon email
           if (insertError.code === '23505') {
             return {
@@ -247,6 +263,8 @@ async function executeFunctionCall(
           }
           throw insertError
         }
+
+        console.log('✅ Client créé avec succès:', client.id)
 
         return {
           success: true,
