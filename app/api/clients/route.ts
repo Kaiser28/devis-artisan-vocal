@@ -42,7 +42,7 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({
-    data: clients,
+    clients: clients,
     pagination: {
       page,
       limit,
