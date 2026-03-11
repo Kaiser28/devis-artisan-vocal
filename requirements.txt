@@ -1,0 +1,46 @@
+# Architecture LangChain - Agence Chatbot Artisan
+
+## 📦 Dépendances Python
+
+### Core LangChain
+langchain==0.1.0
+langchain-openai==0.0.5
+langchain-community==0.0.20
+
+### LLM Providers
+openai==1.10.0
+
+### Google Sheets Integration
+gspread==5.12.0
+oauth2client==4.1.3
+google-auth==2.26.2
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.2.0
+google-api-python-client==2.115.0
+
+### API & Webhooks
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+python-multipart==0.0.6
+
+### PDF Generation
+reportlab==4.0.9
+PyPDF2==3.0.1
+
+### WhatsApp Integration (via Twilio)
+twilio==8.11.1
+
+### Utilities
+python-dotenv==1.0.0
+requests==2.31.0
+httpx==0.26.0
+
+### Database & Storage
+redis==5.0.1  # Pour cache/mémoire
+
+### Development
+pytest==7.4.4
+pytest-asyncio==0.23.3
+black==23.12.1
+flake8==7.0.0
