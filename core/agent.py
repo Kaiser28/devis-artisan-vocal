@@ -1,50 +1,51 @@
 """
-Configuration de l'agent LangChain principal
-Orchestration IA pour gestion artisans BTP
+Agent LangChain principal - Orchestrateur multi-artisan
 """
 
+import os
+from typing import Dict, List, Optional
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.memory import ConversationBufferMemory
-from langchain.schema import SystemMessage
-from typing import List
-import os
+from langchain_core.messages import SystemMessage
 
 # Import des tools
 from core.tools.sheets_tool import SheetsTool
-from core.tools.devis_tool import DevisTool
 
 
 class ArtisanAgent:
-    """Agent IA principal pour un artisan"""
+    """
+    Agent IA pour un artisan spécifique
+    - Utilise LangChain function calling
+    - Connecté au Google Sheets de l'artisan
+    - Outils modulaires (clients, devis, stocks, calendrier)
+    """
     
-    def __init__(self, artisan_id: str, config: dict):
+    def __init__(self, artisan_id: str, config: Dict):
         """
-        Initialise l'agent pour un artisan spécifique
+        Initialise l'agent pour un artisan
         
         Args:
-            artisan_id: Identifiant unique de l'artisan
-            config: Configuration spécifique (Google Sheets ID, etc.)
+            artisan_id: Identifiant unique artisan (ex: "artisan_dupont_78")
+            config: Configuration artisan contenant:
+                - sheets_id: ID du Google Sheets
+                - phone_number: Numéro WhatsApp artisan
+                - raison_sociale: Nom entreprise
+                - specialites: Liste spécialités (peinture, plomberie, etc.)
         """
         self.artisan_id = artisan_id
         self.config = config
         
-        # Initialiser le LLM
+        # Initialiser LLM
         self.llm = ChatOpenAI(
-            model="gpt-4o-mini",  # ou gpt-4 selon budget
-            temperature=0.3,  # Peu créatif, précis
+            model="gpt-4o-mini",  # ou "gpt-4o" pour plus de puissance
+            temperature=0.7,
             openai_api_key=os.getenv("OPENAI_API_KEY")
         )
         
         # Initialiser les tools
         self.tools = self._init_tools()
-        
-        # Initialiser la mémoire
-        self.memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True
-        )
         
         # Créer le prompt système
         self.prompt = self._create_prompt()
@@ -56,113 +57,183 @@ class ArtisanAgent:
             prompt=self.prompt
         )
         
-        # Créer l'executor
+        # Créer l'executor avec mémoire
+        self.memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True
+        )
+        
         self.executor = AgentExecutor(
             agent=self.agent,
             tools=self.tools,
             memory=self.memory,
-            verbose=True,  # Debug
-            max_iterations=10,
+            verbose=True,  # Pour debug
+            max_iterations=5,
             handle_parsing_errors=True
         )
     
     def _init_tools(self) -> List:
         """Initialise les tools disponibles pour l'agent"""
-        sheets_id = self.config.get("google_sheets_id")
+        tools = []
         
-        return [
-            SheetsTool(sheets_id=sheets_id),
-            DevisTool(sheets_id=sheets_id, artisan_id=self.artisan_id),
-            # Ajouter d'autres tools ici
-        ]
+        # Tool Google Sheets (clients, devis, stocks)
+        sheets_tool = SheetsTool(sheets_id=self.config["sheets_id"])
+        tools.append(sheets_tool)
+        
+        # TODO: Ajouter d'autres tools
+        # - DevisTool (génération PDF)
+        # - CalendarTool (rendez-vous)
+        # - StockTool (inventaire)
+        
+        return tools
     
     def _create_prompt(self) -> ChatPromptTemplate:
-        """Crée le prompt système de l'agent"""
+        """Crée le prompt système personnalisé pour l'artisan"""
         
-        system_message = f"""Tu es un assistant IA spécialisé pour {self.config.get('nom_entreprise', 'un artisan')}.
+        system_message = f"""Tu es l'assistant IA de {self.config['raison_sociale']}, artisan spécialisé en {', '.join(self.config.get('specialites', ['BTP']))}.
 
-**TES RESPONSABILITÉS :**
-1. Gérer les clients (recherche, création, modification)
-2. Créer et modifier des devis
-3. Vérifier les stocks
-4. Gérer l'agenda
+**TON RÔLE** :
+- Aider l'artisan dans sa gestion quotidienne (clients, devis, stocks, rendez-vous)
+- Comprendre ses demandes en français naturel
+- Utiliser les outils automatiquement pour effectuer les actions
+- Répondre de manière concise et professionnelle
 
-**TES OUTILS :**
-- search_client : Recherche un client dans Google Sheets
-- create_client : Crée un nouveau client
-- create_devis : Génère un devis avec calcul automatique HT/TVA/TTC
-- get_stock : Vérifie la disponibilité d'un produit
-- add_rdv : Ajoute un rendez-vous à l'agenda
+**OUTILS DISPONIBLES** :
+1. **sheets_tool** : Gestion clients dans Google Sheets
+   - search_client(query) : Recherche un client
+   - create_client(nom, prenom, telephone, email, ville, ...) : Crée un client
+   - get_all_clients() : Liste tous les clients
 
-**RÈGLES IMPORTANTES :**
-1. Toujours confirmer avant de créer/modifier des données
-2. Utiliser les outils systématiquement (ne jamais inventer d'infos)
-3. Calculer correctement les montants HT/TVA/TTC
-4. Être concis et professionnel
-5. Si une info manque, la demander
+2. **devis_tool** (à venir) : Génération de devis PDF
+3. **calendar_tool** (à venir) : Gestion rendez-vous
+4. **stock_tool** (à venir) : Vérification stocks
 
-**EXEMPLE D'INTERACTION :**
-User : "Crée un devis pour Dupont, peinture 30m²"
-Toi : 
-1. search_client("Dupont") → Trouve client ou demande infos
-2. Récupère prix peinture depuis Google Sheets
-3. Calcule : 30m² × 25€ = 750€ HT, TVA 20% = 150€, TTC = 900€
-4. create_devis() avec ces données
-5. Confirme : "✅ Devis DEV-2026-005 créé pour Dupont. Total TTC : 900€"
+**WORKFLOW CLIENT OBLIGATOIRE** :
+1. Demande création client → search_client(nom) d'abord
+2. Si client trouvé → utiliser client existant
+3. Si client NON trouvé → create_client() avec données fournies
+4. Données manquantes → demander nom + (email OU telephone) minimum
 
-**TON STYLE :**
-- Professionnel mais accessible
-- Utilise emojis : ✅ succès, ⚠️ alerte, 🔍 recherche
-- Toujours confirmer les actions importantes
+**WORKFLOW DEVIS** :
+1. Identifier le client (recherche ou création)
+2. Récupérer les prestations demandées
+3. Calculer totaux HT, TVA, TTC
+4. Générer le PDF devis
+5. Enregistrer dans Google Sheets
+
+**STYLE DE COMMUNICATION** :
+- Tutoiement professionnel ("Tu")
+- Emojis pour clarté (✅ ❌ 🔍 📞 💰)
+- Confirmation systématique des actions importantes
+- Résumé clair des résultats
+
+**EXEMPLE D'INTERACTION** :
+Artisan : "Crée un devis pour Dupont, peinture 30m²"
+Assistant :
+1. 🔍 Recherche client "Dupont"...
+2. ❌ Client non trouvé. Informations manquantes :
+   - Téléphone ou email ?
+   - Ville ?
+
+Artisan : "06 50 50 50 50, Versailles"
+Assistant :
+1. ✅ Client créé : Dupont (06 50 50 50 50, Versailles)
+2. 📋 Génération devis peinture 30m² :
+   - HT : 750 €
+   - TVA (20%) : 150 €
+   - **TOTAL TTC : 900 €**
+3. ✅ Devis DEV-2026-001 créé et enregistré
+
+**IMPORTANT** :
+- Toujours vérifier l'existence avant de créer (éviter doublons)
+- Demander confirmation avant actions irréversibles (envoi email, facturation)
+- Garder traces de toutes les conversations dans la mémoire
 """
         
         return ChatPromptTemplate.from_messages([
             SystemMessage(content=system_message),
             MessagesPlaceholder(variable_name="chat_history"),
             ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
+            MessagesPlaceholder(variable_name="agent_scratchpad")
         ])
     
-    async def process_message(self, message: str) -> str:
+    def process_message(self, message: str) -> str:
         """
-        Traite un message de l'artisan
+        Traite un message de l'artisan et retourne la réponse
         
         Args:
-            message: Message texte ou vocal de l'artisan
+            message: Message texte ou transcription vocale
             
         Returns:
-            Réponse de l'agent
+            Réponse de l'agent (texte)
         """
         try:
-            response = await self.executor.ainvoke({"input": message})
-            return response["output"]
+            result = self.executor.invoke({"input": message})
+            return result["output"]
         except Exception as e:
-            return f"❌ Erreur : {str(e)}. Pouvez-vous reformuler ?"
+            return f"❌ Erreur lors du traitement : {str(e)}"
+    
+    async def process_message_async(self, message: str) -> str:
+        """Version asynchrone pour webhooks"""
+        try:
+            result = await self.executor.ainvoke({"input": message})
+            return result["output"]
+        except Exception as e:
+            return f"❌ Erreur lors du traitement : {str(e)}"
     
     def reset_memory(self):
         """Réinitialise la mémoire de conversation"""
         self.memory.clear()
 
 
-# Exemple d'utilisation
-if __name__ == "__main__":
-    import asyncio
+# Factory pour créer des agents par artisan
+class AgentFactory:
+    """Factory pour gérer plusieurs agents artisans"""
     
-    # Configuration artisan exemple
-    config = {
-        "nom_entreprise": "SFERIA TRAVAUX",
-        "google_sheets_id": "1ABC...XYZ",
-        "siret": "123 456 789 00012"
+    _instances: Dict[str, ArtisanAgent] = {}
+    
+    @classmethod
+    def get_agent(cls, artisan_id: str, config: Dict) -> ArtisanAgent:
+        """
+        Récupère ou crée un agent pour un artisan
+        Pattern Singleton par artisan_id
+        """
+        if artisan_id not in cls._instances:
+            cls._instances[artisan_id] = ArtisanAgent(artisan_id, config)
+        return cls._instances[artisan_id]
+    
+    @classmethod
+    def remove_agent(cls, artisan_id: str):
+        """Supprime un agent (libère mémoire)"""
+        if artisan_id in cls._instances:
+            del cls._instances[artisan_id]
+
+
+# Exemple d'utilisation (pour tests locaux)
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    # Configuration test
+    test_config = {
+        "sheets_id": "VOTRE_SHEETS_ID_ICI",
+        "phone_number": "+33650505050",
+        "raison_sociale": "Dupont Peinture",
+        "specialites": ["Peinture", "Ravalement"]
     }
     
     # Créer agent
-    agent = ArtisanAgent(artisan_id="artisan_1", config=config)
+    agent = ArtisanAgent(
+        artisan_id="artisan_test_001",
+        config=test_config
+    )
     
-    # Test
-    async def test():
-        response = await agent.process_message(
-            "Crée un devis pour Dupont, peinture 30m²"
-        )
-        print(response)
-    
-    asyncio.run(test())
+    # Test interaction
+    print("🤖 Agent initialisé. Tapez 'quit' pour quitter.\n")
+    while True:
+        user_input = input("Artisan : ")
+        if user_input.lower() in ["quit", "exit", "q"]:
+            break
+        
+        response = agent.process_message(user_input)
+        print(f"Assistant : {response}\n")

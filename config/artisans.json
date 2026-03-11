@@ -1,0 +1,29 @@
+{
+  "artisan_test_001": {
+    "phone_number": "+33650505050",
+    "sheets_id": "VOTRE_GOOGLE_SHEETS_ID_ICI",
+    "raison_sociale": "Dupont Peinture SARL",
+    "siret": "12345678901234",
+    "adresse": "10 rue de la République",
+    "code_postal": "78000",
+    "ville": "Versailles",
+    "telephone": "01 39 50 50 50",
+    "email": "contact@dupont-peinture.fr",
+    "specialites": ["Peinture", "Ravalement", "Isolation"],
+    "assurance_decennale": "Compagnie ABC - Police n°123456789"
+  },
+  
+  "artisan_exemple_002": {
+    "phone_number": "+33612345678",
+    "sheets_id": "AUTRE_SHEETS_ID",
+    "raison_sociale": "Martin Plomberie",
+    "siret": "98765432109876",
+    "adresse": "25 avenue des Champs",
+    "code_postal": "75008",
+    "ville": "Paris",
+    "telephone": "01 42 42 42 42",
+    "email": "contact@martin-plomberie.fr",
+    "specialites": ["Plomberie", "Chauffage", "Climatisation"],
+    "assurance_decennale": "Compagnie XYZ - Police n°987654321"
+  }
+}
